@@ -1,4 +1,4 @@
-# VitaVault-Backup-utility
+# VitaVault
 
 **VitaVault** is an all-in-one backup utility for the PlayStation Vita, designed to make data preservation simple, fast, and highly customizable. Whether you want to back up save games, trophies, licenses, or specific custom folders, VitaVault provides the tools you need with a native GPU-accelerated interface.
 
@@ -56,6 +56,11 @@ This tool was built thanks to the incredible work of the PS Vita scene:
 *   **Rinnegatamante**: For *vita2d* and his tireless contributions to the scene's libraries and plugins.
 *   **VitaSDK Contributors**: For providing the toolchain and headers necessary for homebrew development.
 *   **The PS Vita Community**: For keeping this amazing handheld alive.
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0**. 
+See the [LICENSE](LICENSE) file for the full text.
 
 ---
 *Developed with passion for the PS Vita.*
