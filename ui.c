@@ -198,11 +198,10 @@ void draw_main_menu(int selected) {
     snprintf(profile_text, sizeof(profile_text),
              "Profile: [%s]  %d/%d active",
              profile_names[current_profile], active, ENTRY_COUNT);
-    // Adjusted spacing to prevent overlap with title and battery
+
     draw_text(g_screen_w - 20 - text_width_at(profile_text, 0.7f), 26,
               COLOR_TEXT_DIM, 0.7f, profile_text);
 
-    // Dest path: abbreviato se troppo lungo per evitare sovrapposizioni
     char dest_text[PATH_MAX_SIZE + 32];
     if (strlen(g_backup_root) > 40) {
         snprintf(dest_text, sizeof(dest_text), "Dest: ...%.100s", g_backup_root + (strlen(g_backup_root) - 37));
@@ -245,7 +244,7 @@ void draw_main_menu(int selected) {
     int fy = g_screen_h - 35;
     draw_panel(0, fy, g_screen_w, 35, COLOR_BG_HEADER);
     draw_text(15, fy + 7, COLOR_TEXT_DIM, 0.8f,
-        "X=Backup  O=Toggle  []=Dest  SEL=Sett  SEL+▼=Prof  ▲=Manage  START=FTP Server");
+        "X=Backup  O=Toggle  []=Dest  SEL=Sett  SEL+▼=Prof  ▲=Manage  START=FTP");
 
     draw_scrollbar(ENTRY_COUNT, visible, selected,
                    g_screen_w - 8, list_y, visible * item_h);
@@ -289,7 +288,7 @@ void draw_file_browser(const char *current_path, char names[][256], int count, i
 
     int fy = g_screen_h - 35;
     draw_panel(0, fy, g_screen_w, 35, COLOR_BG_HEADER);
-    draw_text(15, fy + 7, COLOR_TEXT_DIM, 0.8f, "X=Enter  O=Back  ▲=New Folder  START=CONFIRM CURRENT FOLDER");
+    draw_text(15, fy + 7, COLOR_TEXT_DIM, 0.8f, "X=Enter  O=Back  ▲=New Folder  START=Confirm");
 
     vita2d_end_drawing();
     vita2d_swap_buffers();
@@ -432,8 +431,13 @@ void draw_backup_complete(const BackupLog *log) {
     }
 
     if (ftp_config.enabled) {
+        char ftp_str[580];
+        snprintf(ftp_str, sizeof(ftp_str), "FTP: %s:%d -> %s",
+                 ftp_config.host, ftp_config.port, ftp_config.remote_dir);
+        draw_text(20, y, COLOR_YELLOW, 0.9f, ftp_str);
+        y += 20;
         draw_text(20, y, COLOR_YELLOW, 0.9f,
-                  "FTP upload enabled. Press START to upload, O to exit.");
+                  "Press START to upload, O to exit.");
     } else {
         draw_text(20, y, COLOR_TEXT_DIM, 0.9f, "Press START to exit.");
     }
@@ -495,7 +499,7 @@ void draw_manage_list(int selected, int count) {
 
     draw_panel(0, g_screen_h - 35, g_screen_w, 35, COLOR_BG_HEADER);
     draw_text(15, g_screen_h - 26, COLOR_TEXT_DIM, 0.8f,
-              "UP/DOWN=Navigate  X=Details  O=Back");
+              "▲/▼=Navigate  X=Details  O=Back");
 
     vita2d_end_drawing();
     vita2d_swap_buffers();
@@ -550,7 +554,7 @@ void draw_backup_details(const BackupInfo *b) {
 
     draw_panel(0, g_screen_h - 35, g_screen_w, 35, COLOR_BG_HEADER);
     draw_text(15, g_screen_h - 26, COLOR_TEXT_DIM, 0.8f,
-              "X=Restore  SELECT=Delete  O=Back");
+              "X=Restore  SEL=Delete  O=Back");
 
     vita2d_end_drawing();
     vita2d_swap_buffers();
@@ -685,7 +689,6 @@ void draw_settings(int selected) {
         y += 45;
     }
 
-    // Info Destinazione FTP
     y += 20;
     draw_text(25, y, COLOR_TEXT_DIM, 0.8f, "Current FTP Configuration:");
     snprintf(buf, sizeof(buf), "%s:%d -> %s", ftp_config.host, ftp_config.port, ftp_config.remote_dir);
@@ -693,7 +696,7 @@ void draw_settings(int selected) {
 
     draw_panel(0, g_screen_h - 35, g_screen_w, 35, COLOR_BG_HEADER);
     draw_text(15, g_screen_h - 26, COLOR_TEXT_DIM, 0.8f,
-              "UP/DOWN=Navigate  X=Change/Execute  O=Back");
+              "▲/▼=Navigate  X=Change/Execute  O=Back");
 
     vita2d_end_drawing();
     vita2d_swap_buffers();

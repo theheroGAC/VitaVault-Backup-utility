@@ -35,6 +35,8 @@ void ftp_info_log_cb(const char *msg) {
 int net_init() {
     if (g_net_init) return 1;
 
+    sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
+
     SceNetInitParam param;
     memset(&param, 0, sizeof(param));
     param.memory = malloc(128 * 1024);

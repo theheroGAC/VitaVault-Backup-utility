@@ -563,15 +563,36 @@ int main() {
                 sceKernelDelayThread(10000);
 
                 if (pad.buttons & SCE_CTRL_START) {
-                    done_choice = 1;
                     sceKernelDelayThread(150000);
 
                     if (ftp_config.enabled) {
-                        ftp_upload_backup(&ftp_config, backup_root, NULL);
-                        draw_text_screen("FTP Upload Complete",
-                                         "Upload finished. Press any button.");
-                        sceKernelDelayThread(1500000);
+                        char ip_info[128];
+                        net_get_local_ip(ip_info, sizeof(ip_info));
+                        char ftp_msg[700];
+                        snprintf(ftp_msg, sizeof(ftp_msg),
+                                 "Connecting to:\n%s:%d -> %s\nLocal IP: %s\n\nPlease wait...",
+                                 ftp_config.host, ftp_config.port,
+                                 ftp_config.remote_dir, ip_info);
+                        draw_text_screen("FTP Upload", ftp_msg);
+                        sceKernelDelayThread(1000000);
+
+                        int upload_ok = ftp_upload_backup(&ftp_config, backup_root, NULL);
+                        int upload_done = 0;
+                        while (!upload_done) {
+                            const char *result_title = upload_ok ? "FTP Upload Complete" : "FTP Upload Failed";
+                            const char *result_msg = upload_ok ?
+                                "Upload completed successfully.\nPress any button to continue." :
+                                "Could not connect to FTP server.\nCheck your settings and try again.\nPress any button to continue.";
+                            draw_text_screen(result_title, result_msg);
+                            sceCtrlPeekBufferPositive(0, &pad, 1);
+                            sceKernelDelayThread(10000);
+                            if (pad.buttons & (SCE_CTRL_CROSS | SCE_CTRL_CIRCLE | SCE_CTRL_START)) {
+                                upload_done = 1;
+                                sceKernelDelayThread(150000);
+                            }
+                        }
                     }
+                    done_choice = 1;
                 }
 
                 if (pad.buttons & SCE_CTRL_CIRCLE) {
