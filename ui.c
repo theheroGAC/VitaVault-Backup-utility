@@ -110,7 +110,7 @@ static void draw_notification() {
         int w = tw + 40;
         int h = 35;
         int x = (g_screen_w - w) / 2;
-        int y = g_screen_h - 80; // Spostata in basso sopra la barra comandi per evitare overlap
+        int y = g_screen_h - 80; 
         draw_panel(x, y, w, h, COLOR_BG_HEADER);
         draw_text(x + 20, y + 6, COLOR_YELLOW, 0.9f, g_notification_msg);
     }
@@ -190,7 +190,7 @@ void draw_main_menu(int selected) {
         draw_text(420, 6, COLOR_TEXT_DIM, 0.9f, "[FTP: OFF]");
     }
 
-    // Profile info (right-aligned)
+    
     char profile_text[128];
     int active = 0;
     for (int i = 0; i < ENTRY_COUNT; i++)
@@ -431,13 +431,9 @@ void draw_backup_complete(const BackupLog *log) {
     }
 
     if (ftp_config.enabled) {
-        char ftp_str[580];
-        snprintf(ftp_str, sizeof(ftp_str), "FTP: %s:%d -> %s",
-                 ftp_config.host, ftp_config.port, ftp_config.remote_dir);
-        draw_text(20, y, COLOR_YELLOW, 0.9f, ftp_str);
-        y += 20;
-        draw_text(20, y, COLOR_YELLOW, 0.9f,
-                  "Press START to upload, O to exit.");
+        draw_text(20, y, COLOR_GREEN, 0.9f, "Press START to start FTP server and download to PC.");
+        y += 22;
+        draw_text(20, y, COLOR_TEXT_DIM, 0.8f, "Press O to exit.");
     } else {
         draw_text(20, y, COLOR_TEXT_DIM, 0.9f, "Press START to exit.");
     }

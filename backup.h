@@ -25,6 +25,7 @@ void cleanup_old_backups(int keep_count);
 
 int list_backups(BackupInfo *backups, int max);
 void restore_backup(BackupInfo *backup);
+void delete_directory(const char *path);
 
 void log_init(BackupLog *log);
 void log_write_entry_header(BackupLog *log, int idx, int total, const char *name,

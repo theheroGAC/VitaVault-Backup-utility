@@ -477,17 +477,11 @@ void save_config() {
         "profile=%d\n"
         "backup_root=%s\n"
         "ftp_enabled=%d\n"
-        "ftp_host=%s\n"
-        "ftp_port=%d\n"
-        "ftp_user=%s\n"
-        "ftp_pass=%s\n"
-        "ftp_dir=%s\n"
         "compression=%d\n"
         "checksum=%d\n"
         "# Entry states\n",
         (int)current_profile, g_backup_root,
-        ftp_config.enabled, ftp_config.host, ftp_config.port,
-        ftp_config.user, ftp_config.pass, ftp_config.remote_dir,
+        ftp_config.enabled,
         ftp_config.compression, ftp_config.checksum);
     sceIoWrite(fd, buf, n);
 
@@ -849,6 +843,32 @@ int check_space_before_backup() {
     return 0;
 }
 
+void delete_directory(const char *path) {
+    SceUID dir = sceIoDopen(path);
+    if (dir < 0) {
+        sceIoRemove(path);
+        return;
+    }
+    SceIoDirent ent;
+    memset(&ent, 0, sizeof(ent));
+    while (sceIoDread(dir, &ent) > 0) {
+        if (strcmp(ent.d_name, ".") == 0 || strcmp(ent.d_name, "..") == 0) {
+            memset(&ent, 0, sizeof(ent));
+            continue;
+        }
+        char sub[2048];
+        snprintf(sub, sizeof(sub), "%s/%s", path, ent.d_name);
+        if (SCE_S_ISDIR(ent.d_stat.st_mode)) {
+            delete_directory(sub);
+        } else {
+            sceIoRemove(sub);
+        }
+        memset(&ent, 0, sizeof(ent));
+    }
+    sceIoDclose(dir);
+    sceIoRmdir(path);
+}
+
 void cleanup_old_backups(int keep_count) {
     BackupInfo backups[MAX_BACKUPS];
     int count = list_backups(backups, MAX_BACKUPS);
@@ -856,15 +876,10 @@ void cleanup_old_backups(int keep_count) {
     if (count <= keep_count) return;
 
     for (int i = keep_count; i < count; i++) {
-        char del_path[PATH_MAX_SIZE + 128];
-        snprintf(del_path, sizeof(del_path), "%s/_AUTO_PURGE_%s", 
-                 g_backup_root, backups[i].timestamp);
-        
-        if (sceIoRename(backups[i].path, del_path) >= 0) {
-            char notify[128];
-            snprintf(notify, sizeof(notify), "Auto-purge: removed backup %s", backups[i].timestamp);
-            ui_set_notification(notify);
-        }
+        delete_directory(backups[i].path);
+        char notify[128];
+        snprintf(notify, sizeof(notify), "Auto-purge: removed backup %s", backups[i].timestamp);
+        ui_set_notification(notify);
     }
 }
 
@@ -882,7 +897,8 @@ int list_backups(BackupInfo *backups, int max) {
         if (strcmp(ent.d_name, ".") == 0 ||
             strcmp(ent.d_name, "..") == 0 ||
             strcmp(ent.d_name, "logs") == 0 ||
-            strcmp(ent.d_name, "config.cfg") == 0) {
+            strcmp(ent.d_name, "config.cfg") == 0 ||
+            ent.d_name[0] == '_') {
             memset(&ent, 0, sizeof(ent));
             continue;
         }

@@ -172,26 +172,55 @@ int ftp_enter_pasv(int ctrl_sock, int *data_sock) {
 int ftp_upload_file(int ctrl_sock, int data_sock,
                     const char *local_path, const char *remote_name) {
     SceUID fd = sceIoOpen(local_path, SCE_O_RDONLY, 0);
-    if (fd < 0) return 0;
+    if (fd < 0) {
+        char msg[256];
+        snprintf(msg, sizeof(msg), "FTP: Cannot open local file: %s", remote_name);
+        ui_set_notification(msg);
+        return 0;
+    }
 
     char cmd[512];
     snprintf(cmd, sizeof(cmd), "STOR %s", remote_name);
     char resp[1024];
     ftp_send_cmd(ctrl_sock, cmd, resp, sizeof(resp));
 
-    if (resp[0] != '1') { sceIoClose(fd); return 0; }
+    if (resp[0] != '1') {
+        char msg[256];
+        snprintf(msg, sizeof(msg), "FTP: STOR failed for %s: %.50s", remote_name, resp);
+        ui_set_notification(msg);
+        sceIoClose(fd);
+        return 0;
+    }
 
     char buf[16384];
+    SceOff total_sent = 0;
     while (1) {
         int r = sceIoRead(fd, buf, sizeof(buf));
         if (r <= 0) break;
-        sceNetSend(data_sock, buf, r, 0);
+        int sent = sceNetSend(data_sock, buf, r, 0);
+        if (sent < 0) {
+            char msg[256];
+            snprintf(msg, sizeof(msg), "FTP: Send failed for %s", remote_name);
+            ui_set_notification(msg);
+            sceIoClose(fd);
+            sceNetSocketClose(data_sock);
+            return 0;
+        }
+        total_sent += sent;
     }
 
     sceIoClose(fd);
+    sceNetShutdown(data_sock, 2);
     sceNetSocketClose(data_sock);
 
+    // Read transfer completion response (should start with '2')
     ftp_send_cmd(ctrl_sock, "", resp, sizeof(resp));
+    if (resp[0] != '2') {
+        char msg[256];
+        snprintf(msg, sizeof(msg), "FTP: Transfer failed for %s: %.50s", remote_name, resp);
+        ui_set_notification(msg);
+        return 0;
+    }
     return 1;
 }
 
@@ -213,12 +242,25 @@ int ftp_upload_directory(int ctrl_sock, const char *local_dir, const char *remot
                          int *total_files, int *done_files,
                          SceOff *total_bytes, SceOff *done_bytes) {
 
-    SceUID dir = sceIoDopen(local_dir);
-    if (dir < 0) return -1;
+    char debug_msg[512];
+    snprintf(debug_msg, sizeof(debug_msg), "FTP: Uploading dir %s -> %s", local_dir, remote_base);
+    ui_set_notification(debug_msg);
 
     ftp_mkdir(ctrl_sock, remote_base);
-    ftp_cwd(ctrl_sock, remote_base);
+    if (!ftp_cwd(ctrl_sock, remote_base)) {
+        snprintf(debug_msg, sizeof(debug_msg), "FTP: CWD failed for %s", remote_base);
+        ui_set_notification(debug_msg);
+        return -1;
+    }
 
+    SceUID dir = sceIoDopen(local_dir);
+    if (dir < 0) {
+        snprintf(debug_msg, sizeof(debug_msg), "FTP: Cannot open local dir %s", local_dir);
+        ui_set_notification(debug_msg);
+        return -1;
+    }
+
+    // First pass: count files and create subdirectories
     SceIoDirent ent;
     memset(&ent, 0, sizeof(ent));
     while (sceIoDread(dir, &ent) > 0) {
@@ -226,13 +268,16 @@ int ftp_upload_directory(int ctrl_sock, const char *local_dir, const char *remot
             memset(&ent, 0, sizeof(ent));
             continue;
         }
-        char lp[PATH_MAX_SIZE], rp[PATH_MAX_SIZE];
+        char lp[PATH_MAX_SIZE];
         snprintf(lp, sizeof(lp), "%s/%s", local_dir, ent.d_name);
-        snprintf(rp, sizeof(rp), "%s/%s", remote_base, ent.d_name);
 
         if (SCE_S_ISDIR(ent.d_stat.st_mode)) {
-            ftp_upload_directory(ctrl_sock, lp, rp,
-                                 total_files, done_files, total_bytes, done_bytes);
+            ftp_mkdir(ctrl_sock, ent.d_name);
+            int fc = 0;
+            SceOff fs = 0;
+            count_files_recursive(lp, &fc, &fs);
+            if (total_files) (*total_files) += fc;
+            if (total_bytes) (*total_bytes) += fs;
         } else {
             if (total_files) (*total_files)++;
             if (total_bytes) (*total_bytes) += ent.d_stat.st_size;
@@ -241,6 +286,7 @@ int ftp_upload_directory(int ctrl_sock, const char *local_dir, const char *remot
     }
     sceIoDclose(dir);
 
+    
     dir = sceIoDopen(local_dir);
     if (dir < 0) return 0;
 
@@ -253,12 +299,27 @@ int ftp_upload_directory(int ctrl_sock, const char *local_dir, const char *remot
         char lp[PATH_MAX_SIZE];
         snprintf(lp, sizeof(lp), "%s/%s", local_dir, ent.d_name);
 
-        if (!SCE_S_ISDIR(ent.d_stat.st_mode)) {
+        if (SCE_S_ISDIR(ent.d_stat.st_mode)) {
+            
+            char sub_remote[PATH_MAX_SIZE];
+            snprintf(sub_remote, sizeof(sub_remote), "%s/%s", remote_base, ent.d_name);
+            ftp_upload_directory(ctrl_sock, lp, sub_remote,
+                                 total_files, done_files,
+                                 total_bytes, done_bytes);
+            ftp_cwd(ctrl_sock, remote_base);
+        } else {
             int data_sock = -1;
             if (ftp_enter_pasv(ctrl_sock, &data_sock) && data_sock >= 0) {
-                ftp_upload_file(ctrl_sock, data_sock, lp, ent.d_name);
-                if (done_files) (*done_files)++;
-                if (done_bytes) (*done_bytes) += ent.d_stat.st_size;
+                if (ftp_upload_file(ctrl_sock, data_sock, lp, ent.d_name)) {
+                    if (done_files) (*done_files)++;
+                    if (done_bytes) (*done_bytes) += ent.d_stat.st_size;
+                } else {
+                    snprintf(debug_msg, sizeof(debug_msg), "FTP: Upload failed for %s", ent.d_name);
+                    ui_set_notification(debug_msg);
+                }
+            } else {
+                snprintf(debug_msg, sizeof(debug_msg), "FTP: PASV failed for %s", ent.d_name);
+                ui_set_notification(debug_msg);
             }
         }
         memset(&ent, 0, sizeof(ent));
@@ -270,54 +331,97 @@ int ftp_upload_directory(int ctrl_sock, const char *local_dir, const char *remot
 int ftp_upload_backup(FTPConfig *cfg, const char *backup_path,
                       void (*progress_cb)(int, int, SceOff, SceOff)) {
 
+    char debug_msg[512];
+    snprintf(debug_msg, sizeof(debug_msg), "FTP: Starting upload from %s", backup_path);
+    ui_set_notification(debug_msg);
+
     if (!net_init()) return 0;
 
     int ctrl_sock, data_sock;
-    if (!ftp_connect(cfg, &ctrl_sock, &data_sock))
+    if (!ftp_connect(cfg, &ctrl_sock, &data_sock)) {
+        ui_set_notification("FTP: Connection failed!");
         return 0;
+    }
 
-    ftp_cwd(ctrl_sock, "/");
+    snprintf(debug_msg, sizeof(debug_msg), "FTP: Connected to %s:%d", cfg->host, cfg->port);
+    ui_set_notification(debug_msg);
+
+    if (!ftp_cwd(ctrl_sock, "/")) {
+        sceNetSocketClose(ctrl_sock);
+        ui_set_notification("FTP: CWD / failed!");
+        return 0;
+    }
+
     ftp_mkdir(ctrl_sock, cfg->remote_dir);
-    ftp_cwd(ctrl_sock, cfg->remote_dir);
+    if (!ftp_cwd(ctrl_sock, cfg->remote_dir)) {
+        sceNetSocketClose(ctrl_sock);
+        ui_set_notification("FTP: Cannot access remote dir!");
+        return 0;
+    }
 
+    
     const char *backup_name = strrchr(backup_path, '/');
+    if (!backup_name) backup_name = strrchr(backup_path, '\\');
     if (backup_name) backup_name++; else backup_name = backup_path;
+
+    snprintf(debug_msg, sizeof(debug_msg), "FTP: Backup name: %s", backup_name);
+    ui_set_notification(debug_msg);
 
     int total_files = 0;
     SceOff total_bytes = 0;
     SceUID dir = sceIoDopen(backup_path);
-    if (dir >= 0) {
-        SceIoDirent ent;
-        memset(&ent, 0, sizeof(ent));
-        while (sceIoDread(dir, &ent) > 0) {
-            if (!strcmp(ent.d_name, ".") || !strcmp(ent.d_name, "..")) {
-                memset(&ent, 0, sizeof(ent));
-                continue;
-            }
-            if (SCE_S_ISDIR(ent.d_stat.st_mode)) {
-                char sub[PATH_MAX_SIZE];
-                snprintf(sub, sizeof(sub), "%s/%s", backup_path, ent.d_name);
-                int fc = 0;
-                SceOff fs = 0;
-                count_files_recursive(sub, &fc, &fs);
-                total_files += fc;
-                total_bytes += fs;
-            } else {
-                total_files++;
-                total_bytes += ent.d_stat.st_size;
-            }
-            memset(&ent, 0, sizeof(ent));
-        }
-        sceIoDclose(dir);
+    if (dir < 0) {
+        snprintf(debug_msg, sizeof(debug_msg), "FTP: Cannot open backup path: %s", backup_path);
+        ui_set_notification(debug_msg);
+        sceNetSocketClose(ctrl_sock);
+        return 0;
     }
+
+    SceIoDirent ent;
+    memset(&ent, 0, sizeof(ent));
+    while (sceIoDread(dir, &ent) > 0) {
+        if (!strcmp(ent.d_name, ".") || !strcmp(ent.d_name, "..")) {
+            memset(&ent, 0, sizeof(ent));
+            continue;
+        }
+        if (SCE_S_ISDIR(ent.d_stat.st_mode)) {
+            char sub[PATH_MAX_SIZE];
+            snprintf(sub, sizeof(sub), "%s/%s", backup_path, ent.d_name);
+            int fc = 0;
+            SceOff fs = 0;
+            count_files_recursive(sub, &fc, &fs);
+            total_files += fc;
+            total_bytes += fs;
+        } else {
+            total_files++;
+            total_bytes += ent.d_stat.st_size;
+        }
+        memset(&ent, 0, sizeof(ent));
+    }
+    sceIoDclose(dir);
+
+    snprintf(debug_msg, sizeof(debug_msg), "FTP: Found %d files (%lld bytes)", total_files, (long long)total_bytes);
+    ui_set_notification(debug_msg);
 
     int done_files = 0;
     SceOff done_bytes = 0;
-    ftp_upload_directory(ctrl_sock, backup_path, backup_name,
-                         &total_files, &done_files, &total_bytes, &done_bytes);
+    int upload_err = ftp_upload_directory(ctrl_sock, backup_path, backup_name,
+                                          &total_files, &done_files, &total_bytes, &done_bytes);
+
+    snprintf(debug_msg, sizeof(debug_msg), "FTP: Uploaded %d/%d files", done_files, total_files);
+    ui_set_notification(debug_msg);
 
     ftp_send_cmd(ctrl_sock, "QUIT", NULL, 0);
     if (ctrl_sock >= 0) sceNetSocketClose(ctrl_sock);
+
+    if (upload_err != 0) {
+        ui_set_notification("FTP: Upload error during transfer!");
+        return 0;
+    }
+    if (done_files == 0) {
+        ui_set_notification("FTP: No files were transferred!");
+        return 0;
+    }
 
     return 1;
 }
