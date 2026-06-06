@@ -1,0 +1,170 @@
+# VitaVault Language File - Japanese
+
+language_display_name=日本語
+
+# Main Menu
+main_title=VitaVault Backup Utility
+sidebar_backup=バックアップ
+sidebar_restore=復元
+sidebar_games=ゲーム
+sidebar_tools=ツール
+sidebar_ftp=FTP
+sidebar_usb=USB
+sidebar_settings=設定
+
+# Backup Entries
+entry_full_ux0=ux0を完全バックアップ
+entry_plugins_tai=プラグイン (tai)
+entry_savedata=セーブデータ
+entry_licenses=ライセンス
+entry_trophies=Game トロフィー
+entry_livearea_db=ライブエリアデータベース
+entry_adrenaline=Adrenaline
+entry_themes=カスタムテーマ / ライブエリア
+entry_screenshots=スクリーンショット
+entry_music=音楽
+entry_videos=動画
+entry_downloads=ダウンロードされたファイル
+entry_boot_config=ブートコンフィグ (ur0)
+entry_tm0_licenses=tm0_licenses
+entry_registry=システムレジストリ
+entry_app_metadata=アプリメタデータ
+entry_patches=ゲームパッチ
+entry_dlc=DLC / アドオン
+entry_user_data=ユーザーデータ (ux0)
+entry_retroarch=RetroArchデータ
+entry_playlog=システムプレイログ
+entry_custom=カスタムフォルダ
+
+# Settings
+settings_title=設定
+settings_ftp_enabled=FTP自動アップロード
+settings_ftp_compression=FTP圧縮
+settings_ftp_checksum=FTPチェックサム
+settings_profile=プロフィール
+settings_ftp_server=FTPサーバー
+settings_usb_mass=USBデバイス
+settings_usb_pref=USBデバイスの優先順位
+settings_advanced=高度な設定
+
+# Advanced Settings
+adv_title=高度な設定
+adv_delete_logs=削除ログ
+adv_reset_config=コンフィグをリセット
+
+# Notifications
+noti_ftp_on=FTP: ON
+noti_ftp_off=FTP: OFF
+noti_usb_on=USB: ON
+noti_usb_off=USB: OFF
+noti_dest_updated=目的地が更新されました!
+noti_path_updated=エントリのソースパスを更新しました!
+noti_dest_reset=設定を初期状態にリセット!
+noti_usb_pref_set=USBの設定: %s
+noti_usb_pref_auto=USBの設定: 自動選択
+noti_usb_stopped=USB転送が停止しました
+noti_usb_error=USBエラーにより停止しました!
+noti_stop_usb_first=先にUSB接続を停止してください
+noti_stop_ftp_first=先にFTP接続を停止してください
+noti_modules_missing=VPKにUSBモジュールがありません
+noti_module_copy=USBモジュールのコピーに失敗しました
+noti_memory_not_found=メモリカードが見つかりません
+noti_no_devices=ストレージデバイスが見つかりません!
+
+# System Info
+sys_info=システム情報
+sys_free=空き容量:
+sys_dest=宛先:
+
+# Footer
+footer_backup=O=バックアップを開始  ▲/▼=項目を移動  □=宛先  △+□=元  △+○=リセット
+footer_manage=O=表示  ▲/▼=項目を移動  □=削除  △=戻る
+footer_settings=×=切り替え  ▲/▼=項目を移動  △=戻る
+
+# Profiles
+profile_none=なし
+profile_minimal=最小
+profile_normal=通常
+profile_complete=完了
+
+# Common
+common_on=ON
+common_off=OFF
+common_yes=はい
+common_no=いいえ
+common_back=戻る
+common_select=選択
+common_cancel=キャンセル
+common_delete=削除
+common_confirm=確認
+common_empty=(空)
+
+# Language Names
+lang_english=English
+lang_italian=Italian
+lang_japanese=日本語
+
+# USB
+usb_title=USBデバイス
+usb_connected=PCにUSB接続
+usb_device=デバイス:
+usb_warning=転送中はケーブルを抜かないでください
+usb_disconnect=切断するには〇ボタンを押してください
+usb_active=USBデバイスが有効になっています
+usb_on_pc=PCでVitaドライブを開く:
+usb_use_script=download_backup.batのオプション5を使用するか、
+usb_copy_manual=フォルダを手動でコピーしてください
+usb_press_o=USBを切断するには〇ボタンを押してください
+
+# Storage Selection
+storage_title=USBデバイスを選択してください
+storage_help=USB経由でマウントするストレージを選択してください:
+storage_navigate=▲/▼項目を移動  X=選択  O=キャンセル
+storage_auto=自動選択（毎回確認する）
+
+# Device Names
+dev_memory=メモリーカード
+dev_sd2vita=SD2VITA
+dev_psvsd=PSVSD
+dev_game=ゲームカード
+
+# Tools
+tools_change_dest=バックアップ先の変更
+tools_change_source=エントリのソースパスを変更する
+tools_reset_dest=バックアップ先のリセット
+tools_current=現在:
+
+# FTP Settings
+ftp_enabled=FTP接続有効
+ftp_host=FTPホスト
+ftp_port=FTPポート
+ftp_user=FTPユーザー
+ftp_password=FTPパスワード
+ftp_remote_dir=リモートディレクトリ
+ftp_start_server=FTPサーバーを起動する
+
+# USB Settings
+usb_start_mass=USBデバイスを起動
+usb_pref_device=推奨USBデバイス
+usb_active=アクティブ
+usb_auto=自動
+
+# Settings
+setting_compression=バックアップの圧縮（ZIP）
+setting_checksum=整合性チェック（MD5）
+setting_language=言語
+setting_profile=バックアッププロファイル
+setting_advanced=高度な設定
+
+# Error and Confirmation Messages
+noti_no_entries_title=選択された項目はありません
+noti_no_entries_msg=バックアップエントリは有効になっていません\n\n□ボタンを押して入力モードを有効にし、\nその後Xボタンを押してバックアップを開始してください\n\nいずれかのボタンを押して続行してください
+conf_backup_title=バックアップを確認する
+conf_backup_msg=本当にバックアップを開始しますか?
+conf_restore_title=復元を確認
+conf_restore_msg=このバックアップを復元してもよろしいですか?\nれにより、現在のデータが上書きされます!
+conf_delete_title=削除を確認
+conf_delete_msg=このバックアップを削除してもよろしいですか?
+restore_complete_msg=復元完了: %d ファイル, %d 件のエラー
+title_backup_running=バックアップ実行中...
+title_backup_complete=バックアップが完了しました!
