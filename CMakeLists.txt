@@ -95,6 +95,9 @@ vita_create_vpk(${PROJECT_NAME}.vpk
   # Language files
   FILE lang/en.txt lang/en.txt
   FILE lang/it.txt lang/it.txt
+  FILE lang/jpn.txt lang/jpn.txt
+  FILE lang/es.txt lang/es.txt
+  FILE lang/fr.txt lang/fr.txt
 
   # Pre-compiled USB modules
   FILE module/kernel.skprx module/kernel.skprx

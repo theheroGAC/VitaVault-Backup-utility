@@ -103,6 +103,9 @@ common_empty=(vuoto)
 # Language Names
 lang_english=Inglese
 lang_italian=Italiano
+lang_japanese=Giapponese
+lang_spanish=Spagnolo
+lang_french=Francese
 
 # USB
 usb_title=USB Mass Storage

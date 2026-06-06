@@ -33,6 +33,7 @@ entry_patches=ゲームパッチ
 entry_dlc=DLC / アドオン
 entry_user_data=ユーザーデータ (ux0)
 entry_retroarch=RetroArchデータ
+entry_roms=ROMS
 entry_playlog=システムプレイログ
 entry_custom=カスタムフォルダ
 
@@ -103,6 +104,8 @@ common_empty=(空)
 lang_english=English
 lang_italian=Italian
 lang_japanese=日本語
+lang_spanish=スペイン語
+lang_french=フランス語
 
 # USB
 usb_title=USBデバイス
@@ -162,7 +165,7 @@ noti_no_entries_msg=バックアップエントリは有効になっていませ
 conf_backup_title=バックアップを確認する
 conf_backup_msg=本当にバックアップを開始しますか?
 conf_restore_title=復元を確認
-conf_restore_msg=このバックアップを復元してもよろしいですか?\nれにより、現在のデータが上書きされます!
+conf_restore_msg=このバックアップを復元してもよろしいですか?\nこれにより、現在のデータが上書きされます!
 conf_delete_title=削除を確認
 conf_delete_msg=このバックアップを削除してもよろしいですか?
 restore_complete_msg=復元完了: %d ファイル, %d 件のエラー

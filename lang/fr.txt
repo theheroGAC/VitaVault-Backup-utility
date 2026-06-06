@@ -1,0 +1,173 @@
+# VitaVault Language File - Français
+
+language_display_name=Français
+
+# Main Menu
+main_title=VitaVault Backup Utility
+sidebar_backup=Sauvegarde
+sidebar_restore=Restaurer
+sidebar_games=Jeux
+sidebar_tools=Outils
+sidebar_ftp=FTP
+sidebar_usb=USB
+sidebar_settings=Paramètres
+
+# Backup Entries
+entry_full_ux0=Sauvegarde complète ux0
+entry_plugins_tai=Plugins (tai)
+entry_savedata=SaveData
+entry_licenses=Licences
+entry_trophies=Trophées de jeux
+entry_livearea_db=Base de données LiveArea
+entry_adrenaline=Adrenaline
+entry_themes=Thèmes / Livearea
+entry_screenshots=Captures d'écran
+entry_music=Musique
+entry_videos=Vidéos
+entry_downloads=Téléchargements
+entry_boot_config=Configuration de démarrage (ur0)
+entry_tm0_licenses=tm0_licenses
+entry_registry=Registre système
+entry_app_metadata=Métadonnées d'application
+entry_patches=Correctifs de jeux
+entry_dlc=DLC / Extensions
+entry_user_data=Données utilisateur (ux0)
+entry_retroarch=Données RetroArch
+entry_roms=ROMS
+entry_playlog=Historique de jeu système
+entry_custom=Dossier personnalisé
+
+# Settings
+settings_title=Paramètres
+settings_ftp_enabled=Téléchargement automatique FTP
+settings_ftp_compression=Compression FTP
+settings_ftp_checksum=Checksum FTP
+settings_profile=Profil
+settings_ftp_server=Serveur FTP
+settings_usb_mass=Stockage de masse USB
+settings_usb_pref=Préférence de périphérique USB
+settings_advanced=Avancé
+
+# Advanced Settings
+adv_title=Paramètres avancés
+adv_delete_logs=Supprimer les journaux
+adv_reset_config=Réinitialiser la configuration
+
+# Notifications
+noti_ftp_on=FTP: ACTIVÉ
+noti_ftp_off=FTP: DÉSACTIVÉ
+noti_usb_on=USB: ACTIVÉ
+noti_usb_off=USB: DÉSACTIVÉ
+noti_dest_updated=Destination globale mise à jour !
+noti_path_updated=Chemin source de l'entrée mis à jour !
+noti_dest_reset=Destination réinitialisée par défaut !
+noti_usb_pref_set=Préférence USB : %s
+noti_usb_pref_auto=Préférence USB : Sélection automatique
+noti_usb_stopped=Transfert USB arrêté
+noti_usb_error=Erreur USB lors de l'arrêt !
+noti_stop_usb_first=Arrêter l'USB d'abord
+noti_stop_ftp_first=Arrêter le FTP d'abord
+noti_modules_missing=Modules USB manquants dans le VPK
+noti_module_copy=Échec de la copie des modules USB
+noti_memory_not_found=Mémoire non trouvée
+noti_no_devices=Aucun périphérique de stockage trouvé !
+
+# System Info
+sys_info=Informations système
+sys_free=Libre :
+sys_dest=Dest :
+
+# Footer
+footer_backup=O=Démarrer sauvegarde  ▲/▼=Naviguer  □=Dest  △+□=Source  △+○=Réinitialiser
+footer_manage=O=Voir  ▲/▼=Naviguer  □=Supprimer  △=Retour
+footer_settings=×=Basculer  ▲/▼=Naviguer  △=Retour
+
+# Profiles
+profile_none=AUCUN
+profile_minimal=MINIMAL
+profile_normal=NORMAL
+profile_complete=COMPLET
+
+# Common
+common_on=ACTIVÉ
+common_off=DÉSACTIVÉ
+common_yes=Oui
+common_no=Non
+common_back=Retour
+common_select=Sélectionner
+common_cancel=Annuler
+common_delete=Supprimer
+common_confirm=Confirmer
+common_empty=(vide)
+
+# Language Names
+lang_english=Anglais
+lang_italian=Italien
+lang_japanese=Japonais
+lang_spanish=Espagnol
+lang_french=Français
+
+# USB
+usb_title=Stockage de masse USB
+usb_connected=USB connecté au PC
+usb_device=Périphérique :
+usb_warning=Ne débranchez pas le câble pendant le transfert.
+usb_disconnect=Appuyez sur CERCLE pour déconnecter.
+usb_active=Stockage de masse USB actif.
+usb_on_pc=Sur le PC, ouvrez le lecteur Vita :
+usb_use_script=Utilisez l'option 5 de download_backup.bat,
+usb_copy_manual=ou copiez le dossier manuellement.
+usb_press_o=Appuyez sur O pour déconnecter l'USB.
+
+# Storage Selection
+storage_title=Sélectionner le périphérique de stockage USB
+storage_help=Choisissez le stockage à monter via USB :
+storage_navigate=▲/▼ Naviguer  X=Sélectionner  O=Annuler
+storage_auto=Sélection automatique (demander à chaque fois)
+
+# Device Names
+dev_memory=Carte mémoire
+dev_sd2vita=SD2VITA
+dev_psvsd=PSVSD
+dev_game=Cartouche de jeu
+
+# Tools
+tools_change_dest=Changer la destination de sauvegarde
+tools_change_source=Changer le chemin source de l'entrée
+tools_reset_dest=Réinitialiser la destination de sauvegarde
+tools_current=Actuel :
+
+# FTP Settings
+ftp_enabled=FTP activé
+ftp_host=Hôte FTP
+ftp_port=Port FTP
+ftp_user=Utilisateur FTP
+ftp_password=Mot de passe FTP
+ftp_remote_dir=Dossier distant
+ftp_start_server=Démarrer le serveur FTP
+
+# USB Settings
+usb_start_mass=Démarrer le stockage de masse USB
+usb_pref_device=Périphérique USB préféré
+usb_active=ACTIF
+usb_auto=Auto
+
+# Settings
+setting_compression=Compression de sauvegarde (ZIP)
+setting_checksum=Vérification d'intégrité (MD5)
+setting_language=Langue
+setting_profile=Profil de sauvegarde
+setting_advanced=Avancé
+
+# Error and Confirmation Messages
+noti_no_entries_title=Aucune entrée sélectionnée
+noti_no_entries_msg=Aucune entrée de sauvegarde n'est activée.\n\nAppuyez sur CARRÉ pour activer les entrées,\npuis appuyez sur X pour démarrer la sauvegarde.\n\nAppuyez sur n'importe quel bouton pour continuer.
+conf_backup_title=Confirmer la sauvegarde
+conf_backup_msg=Êtes-vous sûr de vouloir démarrer la sauvegarde ?
+conf_restore_title=Confirmer la restauration
+conf_restore_msg=Êtes-vous sûr de vouloir restaurer cette sauvegarde ?\nCela écrasera vos données !
+conf_delete_title=Confirmer la suppression
+conf_delete_msg=Êtes-vous sûr de vouloir supprimer cette sauvegarde ?
+restore_complete_msg=Restauration terminée : %d fichiers, %d erreurs
+title_backup_running=Sauvegarde en cours...
+title_backup_complete=Sauvegarde terminée !

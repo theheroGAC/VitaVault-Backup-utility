@@ -1,0 +1,173 @@
+# VitaVault Language File - Español
+
+language_display_name=Español
+
+# Main Menu
+main_title=VitaVault Backup Utility
+sidebar_backup=Copia de seguridad
+sidebar_restore=Restaurar
+sidebar_games=Juegos
+sidebar_tools=Herramientas
+sidebar_ftp=FTP
+sidebar_usb=USB
+sidebar_settings=Ajustes
+
+# Backup Entries
+entry_full_ux0=Copia de seguridad completa de ux0
+entry_plugins_tai=Plugins (tai)
+entry_savedata=SaveData
+entry_licenses=Licencias
+entry_trophies=Trofeos de juegos
+entry_livearea_db=Base de datos LiveArea
+entry_adrenaline=Adrenaline
+entry_themes=Temas / Livearea
+entry_screenshots=Capturas de pantalla
+entry_music=Música
+entry_videos=Videos
+entry_downloads=Descargas
+entry_boot_config=Configuración de arranque (ur0)
+entry_tm0_licenses=tm0_licenses
+entry_registry=Registro del sistema
+entry_app_metadata=Metadatos de aplicaciones
+entry_patches=Parches de juegos
+entry_dlc=DLC / Complementos
+entry_user_data=Datos de usuario (ux0)
+entry_retroarch=Datos de RetroArch
+entry_roms=ROMS
+entry_playlog=Registro de juego del sistema
+entry_custom=Carpeta personalizada
+
+# Settings
+settings_title=Ajustes
+settings_ftp_enabled=Carga automática FTP
+settings_ftp_compression=Compresión FTP
+settings_ftp_checksum=Checksum FTP
+settings_profile=Perfil
+settings_ftp_server=Servidor FTP
+settings_usb_mass=Almacenamiento masivo USB
+settings_usb_pref=Preferencia de dispositivo USB
+settings_advanced=Avanzado
+
+# Advanced Settings
+adv_title=Ajustes avanzados
+adv_delete_logs=Eliminar registros
+adv_reset_config=Restablecer configuración
+
+# Notifications
+noti_ftp_on=FTP: ACTIVADO
+noti_ftp_off=FTP: DESACTIVADO
+noti_usb_on=USB: ACTIVADO
+noti_usb_off=USB: DESACTIVADO
+noti_dest_updated=¡Destino global actualizado!
+noti_path_updated=¡Ruta de origen de entrada actualizada!
+noti_dest_reset=¡Destino restablecido a los valores predeterminados!
+noti_usb_pref_set=Preferencia USB: %s
+noti_usb_pref_auto=Preferencia USB: Selección automática
+noti_usb_stopped=Transferencia USB detenida
+noti_usb_error=¡Error de USB al detener!
+noti_stop_usb_first=Detener USB primero
+noti_stop_ftp_first=Detener FTP primero
+noti_modules_missing=Módulos USB faltantes en VPK
+noti_module_copy=Error al copiar módulos USB
+noti_memory_not_found=Memoria no encontrada
+noti_no_devices=¡No se encontraron dispositivos de almacenamiento!
+
+# System Info
+sys_info=Información del sistema
+sys_free=Libre:
+sys_dest=Dest:
+
+# Footer
+footer_backup=O=Iniciar copia  ▲/▼=Navegar  □=Dest  △+□=Origen  △+○=Restablecer
+footer_manage=O=Ver  ▲/▼=Navegar  □=Eliminar  △=Atrás
+footer_settings=×=Alternar  ▲/▼=Navegar  △=Atrás
+
+# Profiles
+profile_none=NINGUNO
+profile_minimal=MÍNIMO
+profile_normal=NORMAL
+profile_complete=COMPLETO
+
+# Common
+common_on=ACTIVADO
+common_off=DESACTIVADO
+common_yes=Sí
+common_no=No
+common_back=Atrás
+common_select=Seleccionar
+common_cancel=Cancelar
+common_delete=Eliminar
+common_confirm=Confirmar
+common_empty=(vacío)
+
+# Language Names
+lang_english=Inglés
+lang_italian=Italiano
+lang_japanese=Japonés
+lang_spanish=Español
+lang_french=Francés
+
+# USB
+usb_title=Almacenamiento masivo USB
+usb_connected=USB conectado al PC
+usb_device=Dispositivo:
+usb_warning=No desconecte el cable durante la transferencia.
+usb_disconnect=Presiona CÍRCULO para desconectar.
+usb_active=Almacenamiento masivo USB activo.
+usb_on_pc=En el PC abre la unidad Vita:
+usb_use_script=Usa la opción 5 de download_backup.bat,
+usb_copy_manual=o copia la carpeta manualmente.
+usb_press_o=Presiona O para desconectar USB.
+
+# Storage Selection
+storage_title=Seleccionar dispositivo de almacenamiento USB
+storage_help=Elige qué almacenamiento montar vía USB:
+storage_navigate=▲/▼ Navegar  X=Seleccionar  O=Cancelar
+storage_auto=Selección automática (preguntar cada vez)
+
+# Device Names
+dev_memory=Tarjeta de memoria
+dev_sd2vita=SD2VITA
+dev_psvsd=PSVSD
+dev_game=Cartucho de juego
+
+# Tools
+tools_change_dest=Cambiar destino de copia de seguridad
+tools_change_source=Cambiar ruta de origen de entrada
+tools_reset_dest=Restablecer destino de copia de seguridad
+tools_current=Actual:
+
+# FTP Settings
+ftp_enabled=FTP activado
+ftp_host=Host FTP
+ftp_port=Puerto FTP
+ftp_user=Usuario FTP
+ftp_password=Contraseña FTP
+ftp_remote_dir=Directorio remoto
+ftp_start_server=Iniciar servidor FTP
+
+# USB Settings
+usb_start_mass=Iniciar almacenamiento masivo USB
+usb_pref_device=Dispositivo USB preferido
+usb_active=ACTIVO
+usb_auto=Automático
+
+# Settings
+setting_compression=Compresión de copia de seguridad (ZIP)
+setting_checksum=Verificación de integridad (MD5)
+setting_language=Idioma
+setting_profile=Perfil de copia de seguridad
+setting_advanced=Avanzado
+
+# Error and Confirmation Messages
+noti_no_entries_title=No hay entradas seleccionadas
+noti_no_entries_msg=No hay entradas de copia de seguridad habilitadas.\n\nPresiona CUADRADO para habilitar entradas,\nluego presiona X para iniciar la copia de seguridad.\n\nPresiona cualquier botón para continuar.
+conf_backup_title=Confirmar copia de seguridad
+conf_backup_msg=¿Estás seguro de que quieres iniciar la copia de seguridad?
+conf_restore_title=Confirmar restauración
+conf_restore_msg=¿Estás seguro de que quieres restaurar esta copia de seguridad?\n¡Esto sobrescribirá tus datos!
+conf_delete_title=Confirmar eliminación
+conf_delete_msg=¿Estás seguro de que quieres eliminar esta copia de seguridad?
+restore_complete_msg=Restauración completada: %d archivos, %d errores
+title_backup_running=Copia de seguridad en progreso...
+title_backup_complete=¡Copia de seguridad completada!
