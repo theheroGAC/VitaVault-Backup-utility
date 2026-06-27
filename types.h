@@ -26,9 +26,11 @@
 
 #define CONFIG_PATH     "ux0:data/VitaVault/config.cfg"
 #define PATH_MAX_SIZE   1024
-#define MAX_BACKUPS     50
-#define MAX_ENTRIES     24
+#define INITIAL_BACKUPS 50
+#define INITIAL_ENTRIES 24
 #define MAX_LINE        512
+#define MAX_LOG_FILES   10
+#define MAX_LOG_SIZE    (5 * 1024 * 1024)
 
 #define FTP_DEFAULT_HOST "192.168.1.100"
 #define FTP_DEFAULT_PORT 21
@@ -70,6 +72,19 @@ typedef struct CopyContext {
     int cancel;
 } CopyContext;
 
+typedef struct {
+    char backup_path[PATH_MAX_SIZE];
+    char timestamp[64];
+    int current_entry_index;
+    int total_entries;
+    int current_file_index;
+    int total_files;
+    SceOff current_bytes;
+    SceOff total_bytes;
+    int is_active;
+    char last_entry_name[64];
+} BackupState;
+
 typedef struct BackupLog {
     char path[PATH_MAX_SIZE + 128];
     SceUID fd;
@@ -94,7 +109,8 @@ typedef struct {
     char user[64];
     char pass[64];
     char remote_dir[256];
-    int enabled;
+    int enabled; // For FTP auto-upload after backup
+    int compression_level; // For ZIP compression level
     int compression; 
     int checksum;    
 } FTPConfig;
@@ -112,13 +128,15 @@ extern const char *profile_names[];
 
 
 
-extern BackupEntry entries[];
+extern BackupEntry *entries;
 extern char g_backup_root[PATH_MAX_SIZE];
 extern int ENTRY_COUNT;
+extern int ENTRIES_CAPACITY;
 extern ProfileType current_profile;
 extern FTPConfig ftp_config;
-extern BackupInfo g_backups[MAX_BACKUPS];
+extern BackupInfo *g_backups;
 extern int g_backup_count;
+extern int g_backups_capacity;
 extern char g_last_backup_path[PATH_MAX_SIZE + 128];
 extern char g_last_log_path[PATH_MAX_SIZE + 128];
 
@@ -128,8 +146,8 @@ extern char g_preferred_usb_name[64];
 
 extern int g_sidebar_selected;
 
-#define MAX_GAMES 100
-extern GameEntry games[];
+extern GameEntry *games;
 extern int GAME_COUNT;
+extern int GAMES_CAPACITY;
 
 #endif

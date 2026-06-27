@@ -40,7 +40,7 @@ The author is not responsible for any damage to your hardware or software, data 
 
 ### Restore Section
 *   **CROSS (X)**: View details of the selected backup and restore.
-*   **SELECT**: Delete the selected backup.
+*   **SELECT**: Delete the selected backup (inside the Details screen).
 *   **CIRCLE (O)**: Go back.
 
 ### Tools Section
@@ -76,7 +76,7 @@ The author is not responsible for any damage to your hardware or software, data 
 
 ### Backup Manager (Triangle Menu)
 *   **CROSS (X)**: View details of the selected backup.
-    *   *Inside Details*: **CROSS (X)** to Restore or **SELECT** to Delete (permanently).
+    *   *Inside Details*: **CROSS (X)** to Restore or **SELECT** to Delete.
 *   **CIRCLE (O)**: Return to main menu.
 
 ### Confirm Dialogs

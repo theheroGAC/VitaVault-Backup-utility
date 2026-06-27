@@ -27,6 +27,7 @@
 #include "usb.h"
 #include "language.h"
 #include "game_backup.h"
+#include "zip_utils.h"
 
 int ime_get_text(const char *title, const char *initial_text, char *out_text, int max_len) {
     SceImeDialogParam param;
@@ -236,6 +237,7 @@ int main() {
     vita2d_set_clear_color(COLOR_BG_MAIN);
     init_font();
 
+    init_dynamic_arrays();
     load_config();
     language_init();
     usb_init();
@@ -278,7 +280,7 @@ int main() {
                 sceKernelDelayThread(150000);
             }
         } else if (g_sidebar_selected == 1) {
-            int backup_count = list_backups(g_backups, MAX_BACKUPS);
+            int backup_count = list_backups(g_backups, g_backups_capacity);
             if (backup_count > 0) {
                 if (pad.buttons & SCE_CTRL_UP) {
                     selected--;
@@ -367,7 +369,7 @@ int main() {
         }
         if (pad.buttons & SCE_CTRL_TRIANGLE) {
             if (g_sidebar_selected == 0) {
-                g_backup_count = list_backups(g_backups, MAX_BACKUPS);
+                g_backup_count = list_backups(g_backups, g_backups_capacity);
                 int mgr_selected = 0;
                 int mgr_running = 1;
 
@@ -491,7 +493,7 @@ int main() {
                                 draw_text_screen("Backup Deleted", buf);
                                 sceKernelDelayThread(1500000);
 
-                                g_backup_count = list_backups(g_backups, MAX_BACKUPS);
+                                g_backup_count = list_backups(g_backups, g_backups_capacity);
                                 if (mgr_selected >= g_backup_count)
                                     mgr_selected = g_backup_count - 1;
                                 if (mgr_selected < 0) mgr_selected = 0;
@@ -721,7 +723,7 @@ int main() {
                 }
             } else if (g_sidebar_selected == 1) {
                 // Restore mode - show backup details and restore
-                int backup_count = list_backups(g_backups, MAX_BACKUPS);
+                int backup_count = list_backups(g_backups, g_backups_capacity);
                 if (backup_count > 0 && selected < backup_count) {
                     int detail_running = 1;
                     while (detail_running) {
@@ -813,7 +815,7 @@ int main() {
                             draw_text_screen("Backup Deleted", buf);
                             sceKernelDelayThread(1500000);
 
-                            backup_count = list_backups(g_backups, MAX_BACKUPS);
+                            backup_count = list_backups(g_backups, g_backups_capacity);
                             if (selected >= backup_count)
                                 selected = backup_count - 1;
                             if (selected < 0) selected = 0;
@@ -1047,7 +1049,13 @@ int main() {
             } else if (g_sidebar_selected == 6) {
                 // Settings mode
                 if (selected == 0) {
-                    ftp_config.compression = !ftp_config.compression;
+                    // Cicla tra i livelli di compressione
+                    int current_level = ftp_config.compression_level;
+                    if (current_level == COMPRESS_NONE) ftp_config.compression_level = COMPRESS_FAST;
+                    else if (current_level == COMPRESS_FAST) ftp_config.compression_level = COMPRESS_NORMAL;
+                    else if (current_level == COMPRESS_NORMAL) ftp_config.compression_level = COMPRESS_MAXIMUM;
+                    else if (current_level == COMPRESS_MAXIMUM) ftp_config.compression_level = COMPRESS_NONE;
+                    else ftp_config.compression_level = COMPRESS_NORMAL; // Default
                     save_config();
                 } else if (selected == 1) {
                     ftp_config.checksum = !ftp_config.checksum;
@@ -1194,6 +1202,8 @@ int main() {
 
     if (g_ftp_active) ftp_server_stop();
     net_term();
+    cleanup_games_array();
+    cleanup_dynamic_arrays();
     ui_fini();
     vita2d_fini();
     sceKernelExitProcess(0);

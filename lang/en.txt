@@ -77,9 +77,18 @@ sys_free=Free:
 sys_dest=Dest:
 
 # Footer
-footer_backup=O=Start Backup  ▲/▼=Navigate  □=Dest  △+□=Source  △+○=Reset
-footer_manage=O=View  ▲/▼=Navigate  □=Delete  △=Back
-footer_settings=×=Toggle  ▲/▼=Navigate  △=Back
+footer_backup_main=X: Backup | △: Manage | □: Toggle | []: Dest | <>: Navigate
+footer_backup_entry=△: Manage | □: Toggle | X: Backup | []: Dest | <>: Navigate
+footer_restore=X: Details | O: Back | <>: Navigate
+footer_games=X: Backup | O: Back | <>: Navigate
+footer_games_empty=O: Back | <>: Navigate
+footer_tools=X: Select | O: Back | <>: Navigate
+footer_ftp=X: Toggle/Edit | O: Back | <>: Navigate
+footer_usb=X: Select | O: Back | <>: Navigate
+footer_settings=X: Toggle/Cycle | O: Back | <>: Navigate
+footer_navigate_only=<>: Navigate
+common_on_bracket=[ON]
+common_off_bracket=[OFF]
 
 # Profiles
 profile_none=NONE
@@ -94,6 +103,7 @@ common_yes=Yes
 common_no=No
 common_back=Back
 common_select=Select
+common_details=Details
 common_cancel=Cancel
 common_delete=Delete
 common_confirm=Confirm

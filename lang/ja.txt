@@ -1,0 +1,183 @@
+èe# VitaVault Language File - 日本語
+
+language_display_name=日本語
+
+# Main Menu
+main_title=VitaVault バックアップユーティリティ
+sidebar_backup=バックアップ
+sidebar_restore=復元
+sidebar_games=ゲーム
+sidebar_tools=ツール
+sidebar_ftp=FTP
+sidebar_usb=USB
+sidebar_settings=設定
+
+# Backup Entries
+entry_full_ux0=ux0完全バックアップ
+entry_plugins_tai=プラグイン (tai)
+entry_savedata=セーブデータ
+entry_licenses=ライセンス
+entry_trophies=ゲームトロフィー
+entry_livearea_db=LiveArea DB
+entry_adrenaline=Adrenaline
+entry_themes=テーマ / Livearea
+entry_screenshots=スクリーンショット
+entry_music=ミュージック
+entry_videos=ビデオ
+entry_downloads=ダウンロード
+entry_boot_config=ブート設定 (ur0)
+entry_tm0_licenses=tm0_licenses
+entry_registry=システムレジストリ
+entry_app_metadata=アプリメタデータ
+entry_patches=ゲームパッチ
+entry_dlc=DLC / アドオン
+entry_user_data=ユーザーデータ (ux0)
+entry_retroarch=RetroArch データ
+entry_roms=ROMS
+entry_playlog=システムプレイログ
+entry_custom=カスタムフォルダ
+
+# Settings
+settings_title=設定
+settings_ftp_enabled=FTP自動アップロード
+settings_ftp_compression=FTP圧縮
+settings_ftp_checksum=FTPチェックサム
+settings_profile=プロファイル
+settings_ftp_server=FTPサーバー
+settings_usb_mass=USBマスストレージ
+settings_usb_pref=優先USBデバイス
+settings_advanced=詳細設定
+
+# Advanced Settings
+adv_title=詳細設定
+adv_delete_logs=ログを削除
+adv_reset_config=設定をリセット
+
+# Notifications
+noti_ftp_on=FTP: ON
+noti_ftp_off=FTP: OFF
+noti_usb_on=USB: ON
+noti_usb_off=USB: OFF
+noti_dest_updated=グローバル保存先が更新されました！
+noti_path_updated=エントリーのソースパスが更新されました！
+noti_dest_reset=保存先がデフォルトにリセットされました！
+noti_usb_pref_set=USB優先: %s
+noti_usb_pref_auto=USB優先: 自動選択
+noti_usb_stopped=USB転送が停止しました
+noti_usb_error=USB停止中にエラーが発生しました！
+noti_stop_usb_first=最初にUSBを停止してください
+noti_stop_ftp_first=最初にFTPを停止してください
+noti_modules_missing=VPKにUSBモジュールがありません
+noti_module_copy=USBモジュールのコピーに失敗しました
+noti_memory_not_found=メモリが見つかりません
+noti_no_devices=ストレージデバイスが見つかりません！
+
+# System Info
+sys_info=システム情報
+sys_free=空き:
+sys_dest=保存先:
+
+# Footer
+footer_backup_main=X: バックアップ | △: 管理 | □: 切替 | []: 保存先 | <>: 操作
+footer_backup_entry=△: 管理 | □: 切替 | X: バックアップ | []: 保存先 | <>: 操作
+footer_restore=X: 詳細 | O: 戻る | <>: 操作
+footer_games=X: バックアップ | O: 戻る | <>: 操作
+footer_games_empty=O: 戻る | <>: 操作
+footer_tools=X: 選択 | O: 戻る | <>: 操作
+footer_ftp=X: 切替/編集 | O: 戻る | <>: 操作
+footer_usb=X: 選択 | O: 戻る | <>: 操作
+footer_settings=X: 切替/サイクル | O: 戻る | <>: 操作
+footer_navigate_only=<>: 操作
+common_on_bracket=[ON]
+common_off_bracket=[OFF]
+
+# Profiles
+profile_none=なし
+profile_minimal=最小
+profile_normal=標準
+profile_complete=完全
+
+# Common
+common_on=ON
+common_off=OFF
+common_yes=はい
+common_no=いいえ
+common_back=戻る
+common_select=選択
+common_details=詳細
+common_cancel=キャンセル
+common_delete=削除
+common_confirm=確認
+common_empty=(空)
+
+# Language Names
+lang_english=英語
+lang_italian=イタリア語
+lang_japanese=日本語
+lang_spanish=スペイン語
+lang_french=フランス語
+
+# USB
+usb_title=USBマスストレージ
+usb_connected=PCにUSB接続済み
+usb_device=デバイス:
+usb_warning=転送中にケーブルを抜かないでください。
+usb_disconnect=○ボタンで切断します。
+usb_active=USBマスストレージが有効です。
+usb_on_pc=PCでVitaドライブを開いてください:
+usb_use_script=download_backup.batのオプション5を使用するか、
+usb_copy_manual=フォルダを手動でコピーしてください。
+usb_press_o=○ボタンでUSBを切断します。
+
+# Storage Selection
+storage_title=USBストレージデバイスを選択
+storage_help=USB経由でマウントするストレージを選択してください:
+storage_navigate=▲/▼ 操作  X=選択  O=キャンセル
+storage_auto=自動選択 (毎回確認)
+
+# Device Names
+dev_memory=メモリーカード
+dev_sd2vita=SD2VITA
+dev_psvsd=PSVSD
+dev_game=ゲームカード
+
+# Tools
+tools_change_dest=バックアップ保存先を変更
+tools_change_source=エントリーのソースパスを変更
+tools_reset_dest=バックアップ保存先をリセット
+tools_current=現在:
+
+# FTP Settings
+ftp_enabled=FTP有効
+ftp_host=FTPホスト
+ftp_port=FTPポート
+ftp_user=FTPユーザー
+ftp_password=FTPパスワード
+ftp_remote_dir=リモートディレクトリ
+ftp_start_server=FTPサーバーを開始
+
+# USB Settings
+usb_start_mass=USBマスストレージを開始
+usb_pref_device=優先USBデバイス
+usb_active=有効
+usb_auto=自動
+
+# Settings
+setting_compression=バックアップ圧縮 (ZIP)
+setting_checksum=整合性チェック (MD5)
+setting_language=言語
+setting_profile=バックアッププロファイル
+setting_advanced=詳細設定
+
+# Error and Confirmation Messages
+noti_no_entries_title=エントリーが選択されていません
+noti_no_entries_msg=有効なバックアップエントリーがありません。\n\n□ボタンでエントリーを有効にし、\nXボタンでバックアップを開始してください。\n\nボタンを押して続行します。
+conf_backup_title=バックアップの確認
+conf_backup_msg=バックアップを開始してもよろしいですか？
+conf_restore_title=復元の確認
+conf_restore_msg=このバックアップを復元してもよろしいですか？\n既存のデータは上書きされます！
+conf_delete_title=削除の確認
+conf_delete_msg=このバックアップを削除してもよろしいですか？
+restore_complete_msg=復元完了: %d ファイル, %d エラー
+title_backup_running=バックアップ進行中...
+title_backup_complete=バックアップ完了！

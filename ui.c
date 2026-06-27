@@ -13,6 +13,7 @@
 #include "ftp.h"
 #include "usb.h"
 #include "language.h"
+#include "zip_utils.h"
 
 static vita2d_pgf *g_font = NULL;
 float g_font_size = 1.0f;
@@ -217,39 +218,36 @@ static void format_entry_path_display(const BackupEntry *entry, char *out, int o
 static void get_main_menu_footer(int selected, char *out, int out_size) {
     switch (g_sidebar_selected) {
         case 0:
-            if (selected < 0 || selected >= ENTRY_COUNT) {
-                snprintf(out, out_size, "X: Backup  △: Manage  □: Toggle  []: Dest  <>: Navigate");
-                return;
+            if (selected >= 0 && selected < ENTRY_COUNT) {
+                 snprintf(out, out_size, "%s %s | %s", entries[selected].name, entries[selected].enabled ? tr("common_on_bracket") : tr("common_off_bracket"), tr("footer_backup_entry"));
+            } else {
+                 snprintf(out, out_size, "%s", tr("footer_backup_main"));
             }
-            snprintf(out, out_size,
-                     "%s %s  |  △: Manage  □: Toggle  X: Backup  []: Dest  <>: Navigate",
-                     entries[selected].name,
-                     entries[selected].enabled ? "[ON]" : "[OFF]");
             break;
         case 1:
-            snprintf(out, out_size, "X: Details  O: Back  SEL: Delete  <>: Navigate");
+            snprintf(out, out_size, "%s", tr("footer_restore"));
             break;
         case 2:
             if (GAME_COUNT == 0) {
-                snprintf(out, out_size, "O: Back  <>: Navigate");
+                snprintf(out, out_size, "%s", tr("footer_games_empty"));
             } else {
-                snprintf(out, out_size, "X: Backup  O: Back  <>: Navigate");
+                snprintf(out, out_size, "%s", tr("footer_games"));
             }
             break;
         case 3:
-            snprintf(out, out_size, "X: Select  O: Back  <>: Navigate");
+            snprintf(out, out_size, "%s", tr("footer_tools"));
             break;
         case 4:
-            snprintf(out, out_size, "X: Toggle/Edit  O: Back  <>: Navigate");
+            snprintf(out, out_size, "%s", tr("footer_ftp"));
             break;
         case 5:
-            snprintf(out, out_size, "X: Select  O: Back  <>: Navigate");
+            snprintf(out, out_size, "%s", tr("footer_usb"));
             break;
         case 6:
-            snprintf(out, out_size, "X: Toggle/Cycle  O: Back  <>: Navigate");
+            snprintf(out, out_size, "%s", tr("footer_settings"));
             break;
         default:
-            snprintf(out, out_size, "<>: Navigate");
+            snprintf(out, out_size, "%s", tr("footer_navigate_only"));
             break;
     }
 }
@@ -388,7 +386,7 @@ void draw_main_menu(int selected) {
                        list_x + list_w - 8, list_y, visible * item_h);
     } else if (g_sidebar_selected == 1) {
         // Restore - show backup list
-        int backup_count = list_backups(g_backups, MAX_BACKUPS);
+        int backup_count = list_backups(g_backups, g_backups_capacity);
         int item_h = 55;
         int visible = (g_screen_h - list_y - 40) / item_h;
         int restore_selected = selected;
@@ -678,12 +676,22 @@ void draw_main_menu(int selected) {
             unsigned int label_color = (i == selected) ? COLOR_TEXT_BRIGHT : COLOR_TEXT_MAIN;
 
             if (i == 0) {
-                draw_checkbox(list_x + 10, y + 4, ftp_config.compression);
+                const char *comp_level_str = "OFF";
+                unsigned int state_color = COLOR_TEXT_DIM;
+                if (ftp_config.compression_level == COMPRESS_FAST) {
+                    comp_level_str = "FAST";
+                    state_color = COLOR_YELLOW;
+                } else if (ftp_config.compression_level == COMPRESS_NORMAL) {
+                    comp_level_str = "NORMAL";
+                    state_color = COLOR_GREEN;
+                } else if (ftp_config.compression_level == COMPRESS_MAXIMUM) {
+                    comp_level_str = "MAX";
+                    state_color = COLOR_RED;
+                }
+
                 draw_text(list_x + 35, y + 4, label_color, 0.9f, tr(rows[i].label_key));
-                const char *state = ftp_config.compression ? tr("common_on") : tr("common_off");
-                unsigned int state_color = ftp_config.compression ? COLOR_GREEN : COLOR_TEXT_DIM;
-                int sw = text_width_at(state, 0.85f);
-                draw_text(list_x + list_w - 20 - sw, y + 6, state_color, 0.85f, state);
+                int sw = text_width_at(comp_level_str, 0.85f);
+                draw_text(list_x + list_w - 20 - sw, y + 6, state_color, 0.85f, comp_level_str);
             } else if (i == 1) {
                 draw_checkbox(list_x + 10, y + 4, ftp_config.checksum);
                 draw_text(list_x + 35, y + 4, label_color, 0.9f, tr(rows[i].label_key));
@@ -718,9 +726,16 @@ void draw_main_menu(int selected) {
 
     int fy = g_screen_h - 35;
     draw_panel(0, fy, g_screen_w, 35, COLOR_BG_HEADER);
+    
     get_main_menu_footer(selected, buf, sizeof(buf));
-    draw_text(15, fy + 7, COLOR_TEXT_DIM, 0.72f, buf);
 
+    // Adatta dinamicamente la dimensione del font del footer se il testo è troppo lungo
+    float footer_font_size = 0.72f;
+    int footer_width = text_width_at(buf, footer_font_size);
+    if (footer_width > g_screen_w - 30) { // 15px di padding per lato
+        footer_font_size = 0.65f; // Riduci la dimensione se non ci sta
+    }
+    draw_text(15, fy + 7, COLOR_TEXT_DIM, footer_font_size, buf);
     draw_notification();
 
     vita2d_end_drawing();
@@ -1389,7 +1404,7 @@ int draw_storage_selection_menu(const char *devices[], const char *paths[], int 
 }
 
 void draw_restore_screen(int selected) {
-    int backup_count = list_backups(g_backups, MAX_BACKUPS);
+    int backup_count = list_backups(g_backups, g_backups_capacity);
     
     vita2d_start_drawing();
     vita2d_clear_screen();

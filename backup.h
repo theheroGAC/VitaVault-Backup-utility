@@ -4,8 +4,13 @@
 #include <psp2/vshbridge.h>
 #include "types.h"
 
-extern BackupEntry entries[];
+extern BackupEntry *entries;
 extern int ENTRY_COUNT;
+extern int ENTRIES_CAPACITY;
+
+void init_dynamic_arrays();
+void cleanup_dynamic_arrays();
+int expand_backups_array();
 
 void format_size(char *out, int out_size, SceOff bytes);
 void get_timestamp(char *out, int size);
@@ -46,5 +51,34 @@ void cycle_profile();
 
 int delete_logs(void);
 int reset_config(void);
+
+typedef struct {
+    char path[PATH_MAX_SIZE];
+    int only_in_a;
+    int only_in_b;
+    int different_size;
+    SceOff size_a;
+    SceOff size_b;
+} FileDiff;
+
+typedef struct {
+    BackupInfo *backup_a;
+    BackupInfo *backup_b;
+    FileDiff *diffs;
+    int diff_count;
+    int total_files_a;
+    int total_files_b;
+    SceOff total_size_a;
+    SceOff total_size_b;
+} BackupComparison;
+
+int compare_backups(const char *backup_path_a, const char *backup_path_b, BackupComparison *comp);
+void free_backup_comparison(BackupComparison *comp);
+
+int save_backup_state(BackupState *state);
+int load_backup_state(BackupState *state);
+int clear_backup_state(void);
+int can_resume_backup(void);
+int resume_backup(char *backup_root, int root_size, BackupLog *log);
 
 #endif

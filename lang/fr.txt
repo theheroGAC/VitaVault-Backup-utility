@@ -78,9 +78,18 @@ sys_free=Libre :
 sys_dest=Dest :
 
 # Footer
-footer_backup=O=Démarrer sauvegarde  ▲/▼=Naviguer  □=Dest  △+□=Source  △+○=Réinitialiser
-footer_manage=O=Voir  ▲/▼=Naviguer  □=Supprimer  △=Retour
-footer_settings=×=Basculer  ▲/▼=Naviguer  △=Retour
+footer_backup_main=X: Sauvegarder | △: Gérer | □: Act/Dés | []: Dest | <>: Naviguer
+footer_backup_entry=△: Gérer | □: Act/Dés | X: Sauvegarder | []: Dest | <>: Naviguer
+footer_restore=X: Détails | O: Retour | <>: Naviguer
+footer_games=X: Sauvegarder | O: Retour | <>: Naviguer
+footer_games_empty=O: Retour | <>: Naviguer
+footer_tools=X: Sélectionner | O: Retour | <>: Naviguer
+footer_ftp=X: Act/Éditer | O: Retour | <>: Naviguer
+footer_usb=X: Sélectionner | O: Retour | <>: Naviguer
+footer_settings=X: Act/Changer | O: Retour | <>: Naviguer
+footer_navigate_only=<>: Naviguer
+common_on_bracket=[ON]
+common_off_bracket=[OFF]
 
 # Profiles
 profile_none=AUCUN
@@ -95,6 +104,7 @@ common_yes=Oui
 common_no=Non
 common_back=Retour
 common_select=Sélectionner
+common_details=Détails
 common_cancel=Annuler
 common_delete=Supprimer
 common_confirm=Confirmer
@@ -160,7 +170,7 @@ setting_profile=Profil de sauvegarde
 setting_advanced=Avancé
 
 # Error and Confirmation Messages
-noti_no_entries_title=Aucune entrée sélectionnée
+noti_no_entries_title=Aucune entrée sélectionnée_
 noti_no_entries_msg=Aucune entrée de sauvegarde n'est activée.\n\nAppuyez sur CARRÉ pour activer les entrées,\npuis appuyez sur X pour démarrer la sauvegarde.\n\nAppuyez sur n'importe quel bouton pour continuer.
 conf_backup_title=Confirmer la sauvegarde
 conf_backup_msg=Êtes-vous sûr de vouloir démarrer la sauvegarde ?

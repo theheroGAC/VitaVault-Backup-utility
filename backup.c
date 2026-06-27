@@ -18,7 +18,7 @@
 #include "zip_utils.h"
 #include "language.h"
 
-BackupEntry entries[] = {
+static BackupEntry static_entries[] = {
     { "Adrenaline",          "ux0:pspemu/PSP",                       1 },
     { "App metadata",        "ux0:app",                              0 },
     { "Boot Config (ur0)",   "ur0:vsh/boot",                         0 },
@@ -44,14 +44,17 @@ BackupEntry entries[] = {
     { "Videos",              "ux0:video",                             0 },
 };
 
-char g_backup_root[PATH_MAX_SIZE] = "ux0:VitaVault";
+BackupEntry *entries = NULL;
+int ENTRY_COUNT = 0;
+int ENTRIES_CAPACITY = 0;
 
-int ENTRY_COUNT = sizeof(entries) / sizeof(entries[0]);
+char g_backup_root[PATH_MAX_SIZE] = "ux0:VitaVault";
 
 ProfileType current_profile = PROFILE_NONE;
 FTPConfig ftp_config;
-BackupInfo g_backups[MAX_BACKUPS];
+BackupInfo *g_backups = NULL;
 int g_backup_count = 0;
+int g_backups_capacity = 0;
 char g_last_backup_path[PATH_MAX_SIZE + 128] = "";
 char g_preferred_usb_device[64] = "";
 char g_preferred_usb_name[64] = "";
@@ -64,6 +67,52 @@ ProgressCallback g_progress_cb = NULL;
 int g_prog_eidx = 0;
 int g_prog_total_entries = 0;
 const char *g_prog_entry_name = NULL;
+
+void init_dynamic_arrays() {
+    int static_count = sizeof(static_entries) / sizeof(static_entries[0]);
+    
+    entries = (BackupEntry *)malloc(static_count * sizeof(BackupEntry));
+    if (entries) {
+        memcpy(entries, static_entries, static_count * sizeof(BackupEntry));
+        ENTRY_COUNT = static_count;
+        ENTRIES_CAPACITY = static_count;
+    }
+    
+    g_backups = (BackupInfo *)malloc(INITIAL_BACKUPS * sizeof(BackupInfo));
+    if (g_backups) {
+        g_backups_capacity = INITIAL_BACKUPS;
+        g_backup_count = 0;
+    }
+}
+
+void cleanup_dynamic_arrays() {
+    if (entries) {
+        free(entries);
+        entries = NULL;
+        ENTRY_COUNT = 0;
+        ENTRIES_CAPACITY = 0;
+    }
+    
+    if (g_backups) {
+        free(g_backups);
+        g_backups = NULL;
+        g_backup_count = 0;
+        g_backups_capacity = 0;
+    }
+}
+
+int expand_backups_array() {
+    int new_capacity = g_backups_capacity * 2;
+    if (new_capacity == 0) new_capacity = INITIAL_BACKUPS;
+    
+    BackupInfo *new_backups = (BackupInfo *)realloc(g_backups, new_capacity * sizeof(BackupInfo));
+    if (new_backups) {
+        g_backups = new_backups;
+        g_backups_capacity = new_capacity;
+        return 1;
+    }
+    return 0;
+}
 
 static int vshIoMount(SceVshMountId id, const char *path, int permission, int a4, int a5, int a6) {
     uint32_t buf[3];
@@ -80,23 +129,64 @@ void remount(SceVshMountId id) {
 }
 
 void mount_all_partitions() {
+    typedef struct {
+        SceVshMountId id;
+        const char *name;
+        int permission;
+        int critical;
+    } MountPoint;
 
-    int tm0_res = vshIoMount(0x600, NULL, 2, 0, 0, 0);
-    
+    MountPoint mount_points[] = {
+        {0x600, "tm0 (primary)", 2, 0},
+        {0x500, "tm0 (fallback 1)", 2, 0},
+        {0x400, "tm0 (fallback 2)", 2, 0},
+        {0x200, "ur0", 0, 1},
+        {0x000, "ux0", 0, 1},
+        {0x300, "uma0", 0, 0},
+        {0xF00, "vd0", 0, 0}
+    };
 
-    if (tm0_res < 0) {
-        vshIoMount(0x500, NULL, 2, 0, 0, 0);  
+    int total_mounts = 0;
+    int failed_mounts = 0;
+    int tm0_mounted = 0;
+
+    for (int i = 0; i < sizeof(mount_points) / sizeof(mount_points[0]); i++) {
+        MountPoint *mp = &mount_points[i];
+        int res = vshIoMount(mp->id, NULL, mp->permission, 0, 0, 0);
+        
+        total_mounts++;
+        
+        if (res >= 0) {
+            if (mp->id >= 0x400 && mp->id <= 0x600) {
+                tm0_mounted = 1;
+            }
+        } else {
+            failed_mounts++;
+            if (mp->critical) {
+                sceIoMkdir("ux0:data/VitaVault", 0777);
+                BackupLog err_log;
+                log_init(&err_log);
+                char err_msg[256];
+                snprintf(err_msg, sizeof(err_msg), "CRITICAL: Failed to mount %s (ID: 0x%X, error: 0x%X)", 
+                         mp->name, mp->id, res);
+                log_write(&err_log, err_msg);
+                log_close(&err_log);
+            }
+            if (mp->id >= 0x400 && mp->id <= 0x600 && !tm0_mounted) {
+                continue;
+            }
+        }
     }
-    if (tm0_res < 0) {
-        vshIoMount(0x400, NULL, 2, 0, 0, 0);  
-    }
 
-    
-    vshIoMount(0x200, NULL, 0, 0, 0, 0);  
-    vshIoMount(0x000, NULL, 0, 0, 0, 0);  
-    vshIoMount(0x300, NULL, 0, 0, 0, 0);  
-    remount(0x800);                         
-    vshIoMount(0xF00, NULL, 0, 0, 0, 0);  
+    remount(0x800);
+
+    BackupLog mount_log;
+    log_init(&mount_log);
+    char log_msg[256];
+    snprintf(log_msg, sizeof(log_msg), "Mount summary: %d/%d successful, %d failed", 
+             total_mounts - failed_mounts, total_mounts, failed_mounts);
+    log_write(&mount_log, log_msg);
+    log_close(&mount_log);
 }
 
 
@@ -324,17 +414,23 @@ int entry_source_exists(const BackupEntry *entry) {
 }
 
 void get_last_backup_summary(char *out, int out_size) {
-    BackupInfo backups[MAX_BACKUPS];
-    int count = list_backups(backups, MAX_BACKUPS);
+    BackupInfo *backups = (BackupInfo *)malloc(g_backups_capacity * sizeof(BackupInfo));
+    if (!backups) {
+        snprintf(out, out_size, "Last: none (memory error)");
+        return;
+    }
+    int count = list_backups(backups, g_backups_capacity);
 
     if (count == 0) {
         snprintf(out, out_size, "Last: none");
+        free(backups);
         return;
     }
 
     char sz[32];
     format_size(sz, sizeof(sz), backups[0].total_size);
     snprintf(out, out_size, "Last: %s  %s", backups[0].timestamp, sz);
+    free(backups);
 }
 
 static int should_skip_copy_path(const char *path) {
@@ -454,11 +550,66 @@ int restore_entry(const char *src, const char *dst, int *fr, SceOff *br, int *er
     return 0;
 }
 
+static void rotate_log_files(const char *log_dir) {
+    SceUID dir = sceIoDopen(log_dir);
+    if (dir < 0) return;
+    
+    char log_files[MAX_LOG_FILES][PATH_MAX_SIZE];
+    int log_count = 0;
+    SceIoDirent ent;
+    
+    while (sceIoDread(dir, &ent) > 0 && log_count < MAX_LOG_FILES) {
+        if (strstr(ent.d_name, ".txt")) {
+            snprintf(log_files[log_count], sizeof(log_files[log_count]), "%s/%s", log_dir, ent.d_name);
+            log_count++;
+        }
+    }
+    sceIoDclose(dir);
+    
+    if (log_count <= MAX_LOG_FILES) return;
+    
+    for (int i = 0; i < log_count; i++) {
+        for (int j = i + 1; j < log_count; j++) {
+            SceIoStat stat_i, stat_j;
+            if (sceIoGetstat(log_files[i], &stat_i) >= 0 && 
+                sceIoGetstat(log_files[j], &stat_j) >= 0) {
+                int cmp = 0;
+                if (stat_i.st_mtime.year > stat_j.st_mtime.year) cmp = 1;
+                else if (stat_i.st_mtime.year < stat_j.st_mtime.year) cmp = -1;
+                else if (stat_i.st_mtime.month > stat_j.st_mtime.month) cmp = 1;
+                else if (stat_i.st_mtime.month < stat_j.st_mtime.month) cmp = -1;
+                else if (stat_i.st_mtime.day > stat_j.st_mtime.day) cmp = 1;
+                else if (stat_i.st_mtime.day < stat_j.st_mtime.day) cmp = -1;
+                else if (stat_i.st_mtime.hour > stat_j.st_mtime.hour) cmp = 1;
+                else if (stat_i.st_mtime.hour < stat_j.st_mtime.hour) cmp = -1;
+                else if (stat_i.st_mtime.minute > stat_j.st_mtime.minute) cmp = 1;
+                else if (stat_i.st_mtime.minute < stat_j.st_mtime.minute) cmp = -1;
+                else if (stat_i.st_mtime.second > stat_j.st_mtime.second) cmp = 1;
+                else if (stat_i.st_mtime.second < stat_j.st_mtime.second) cmp = -1;
+                
+                if (cmp > 0) {
+                    char temp[PATH_MAX_SIZE];
+                    strcpy(temp, log_files[i]);
+                    strcpy(log_files[i], log_files[j]);
+                    strcpy(log_files[j], temp);
+                }
+            }
+        }
+    }
+    
+    int to_delete = log_count - MAX_LOG_FILES;
+    for (int i = 0; i < to_delete; i++) {
+        sceIoRemove(log_files[i]);
+    }
+}
+
 void log_init(BackupLog *log) {
     char log_dir[PATH_MAX_SIZE + 64];
     snprintf(log_dir, sizeof(log_dir), "%s/logs", g_backup_root);
     create_dir(log_dir);
     create_dir(g_backup_root);
+    
+    rotate_log_files(log_dir);
 
     char ts[64];
     get_timestamp(ts, sizeof(ts));
@@ -507,7 +658,31 @@ void log_write_entry_result(BackupLog *log, int has_error) {
 }
 
 void log_write(BackupLog *log, const char *text) {
-    if (log && log->fd >= 0) sceIoWrite(log->fd, text, strlen(text));
+    if (!log || log->fd < 0) return;
+    
+    SceIoStat stat;
+    if (sceIoGetstat(log->path, &stat) >= 0) {
+        if (stat.st_size > MAX_LOG_SIZE) {
+            char new_path[PATH_MAX_SIZE + 128];
+            char ts[64];
+            get_timestamp(ts, sizeof(ts));
+            snprintf(new_path, sizeof(new_path), "%s/logs/%s_rotated.txt", g_backup_root, ts);
+            
+
+            sceIoClose(log->fd);
+            sceIoRename(log->path, new_path);
+            
+
+            log->fd = sceIoOpen(log->path, SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+            if (log->fd >= 0) {
+                char h[PATH_MAX_SIZE + 256];
+                snprintf(h, sizeof(h), "[Log rotated due to size limit - continued from %s]\n\n", new_path);
+                sceIoWrite(log->fd, h, strlen(h));
+            }
+        }
+    }
+    
+    if (log->fd >= 0) sceIoWrite(log->fd, text, strlen(text));
 }
 
 void log_close(BackupLog *log) {
@@ -544,14 +719,15 @@ void save_config() {
         "backup_root=%s\n"
         "ftp_enabled=%d\n"
         "compression=%d\n"
+        "compression_level=%d\n"
         "checksum=%d\n"
         "preferred_usb_device=%s\n"
         "preferred_usb_name=%s\n"
         "language=%d\n"
         "\n# Individual Entry Toggle States (1 = Enabled, 0 = Disabled)\n",
         (int)current_profile, g_backup_root,
-        ftp_config.enabled,
-        ftp_config.compression, ftp_config.checksum,
+        ftp_config.enabled, ftp_config.compression,
+        ftp_config.compression_level, ftp_config.checksum,
         g_preferred_usb_device, g_preferred_usb_name,
         (int)g_current_language);
     if (n > 0) sceIoWrite(fd, buf, n);
@@ -572,6 +748,11 @@ int load_config() {
     ftp_config.enabled = 0;
     ftp_config.compression = 0;
     ftp_config.checksum = 0;
+    // Imposta un livello di compressione predefinito se non presente nel file di configurazione
+    if (ftp_config.compression_level < 0 || ftp_config.compression_level > 9) {
+        ftp_config.compression_level = COMPRESS_NORMAL;
+    }
+
     g_preferred_usb_device[0] = '\0';
     g_preferred_usb_name[0] = '\0';
 
@@ -613,6 +794,8 @@ int load_config() {
         } else if (strncmp(line, "language=", 9) == 0) {
             int lang = atoi(line + 9);
             if (lang >= 0) g_current_language = lang;
+        } else if (strncmp(line, "compression_level=", 18) == 0) {
+            ftp_config.compression_level = atoi(line + 18);
         } else if (strncmp(line, "ftp_enabled=", 12) == 0)
             ftp_config.enabled = atoi(line + 12);
         else if (strncmp(line, "ftp_host=", 9) == 0)
@@ -873,12 +1056,12 @@ int do_backup(char *backup_root, int root_size, BackupLog *log) {
                 
                 file_path = strtok(NULL, "|");
             }
-        } else if (ftp_config.compression) {
+        } else if (ftp_config.compression_level > COMPRESS_NONE) {
             char zip_dst[PATH_MAX_SIZE];
             snprintf(zip_dst, sizeof(zip_dst), "%s/%s.zip", backup_root, entries[i].name);
             log_write(log, "  Mode: Compressed (ZIP)\n");
             zip_directory(entries[i].source, zip_dst, &ctx, entries[i].name, 
-                          eidx, active, g_progress_cb);
+                          eidx, active, g_progress_cb, ftp_config.compression_level);
         } else {
             copy_directory(entries[i].source, dst, &ctx, log);
         }
@@ -957,10 +1140,14 @@ void delete_directory(const char *path) {
 }
 
 void cleanup_old_backups(int keep_count) {
-    BackupInfo backups[MAX_BACKUPS];
-    int count = list_backups(backups, MAX_BACKUPS);
+    BackupInfo *backups = (BackupInfo *)malloc(g_backups_capacity * sizeof(BackupInfo));
+    if (!backups) return;
+    int count = list_backups(backups, g_backups_capacity);
 
-    if (count <= keep_count) return;
+    if (count <= keep_count) {
+        free(backups);
+        return;
+    }
 
     for (int i = keep_count; i < count; i++) {
         delete_directory(backups[i].path);
@@ -968,6 +1155,7 @@ void cleanup_old_backups(int keep_count) {
         snprintf(notify, sizeof(notify), "Auto-purge: removed backup %s", backups[i].timestamp);
         ui_set_notification(notify);
     }
+    free(backups);
 }
 
 static int is_backup_folder_name(const char *name) {
@@ -1004,12 +1192,13 @@ int list_backups(BackupInfo *backups, int max) {
     SceUID dir = sceIoDopen(g_backup_root);
     if (dir < 0) return 0;
 
-    char dir_names[MAX_BACKUPS][64];
+    char (*dir_names)[64] = (char (*)[64])malloc(g_backups_capacity * 64);
+    if (!dir_names) return 0;
     int dc = 0;
     SceIoDirent ent;
     memset(&ent, 0, sizeof(ent));
 
-    while (sceIoDread(dir, &ent) > 0 && dc < MAX_BACKUPS) {
+    while (sceIoDread(dir, &ent) > 0 && dc < g_backups_capacity) {
         if (strcmp(ent.d_name, ".") == 0 ||
             strcmp(ent.d_name, "..") == 0 ||
             !is_backup_folder_name(ent.d_name)) {
@@ -1068,12 +1257,19 @@ int list_backups(BackupInfo *backups, int max) {
                     backups[count].total_entries += fc;
                     backups[count].total_size += fs;
                 }
+                // Aggiungi la dimensione dei file .zip
+                else if (strstr(se.d_name, ".zip")) {
+                    backups[count].entry_count++;
+                    backups[count].total_entries++; // Considera un file zip come una singola entry/file
+                    backups[count].total_size += se.d_stat.st_size;
+                }
                 memset(&se, 0, sizeof(se));
             }
             sceIoDclose(sd);
         }
         count++;
     }
+    free(dir_names);
     return count;
 }
 
@@ -1113,12 +1309,239 @@ int reset_config(void) {
     strcpy(g_backup_root, "ux0:VitaVault");
     ftp_config.enabled = 0;
     ftp_config.compression = 0;
+    ftp_config.compression_level = COMPRESS_NORMAL;
     ftp_config.checksum = 0;
-    strcpy(ftp_config.host, FTP_DEFAULT_HOST);
-    ftp_config.port = FTP_DEFAULT_PORT;
-    strcpy(ftp_config.user, FTP_DEFAULT_USER);
-    strcpy(ftp_config.pass, FTP_DEFAULT_PASS);
-    strcpy(ftp_config.remote_dir, FTP_DEFAULT_DIR);
     save_config();
+    return 0;
+}
+
+static int collect_files_recursive(const char *path, char **files, SceOff *sizes, int *count, int max_files) {
+    SceUID dir = sceIoDopen(path);
+    if (dir < 0) return -1;
+    
+    SceIoDirent ent;
+    while (sceIoDread(dir, &ent) > 0 && *count < max_files) {
+        if (strcmp(ent.d_name, ".") == 0 || strcmp(ent.d_name, "..") == 0) continue;
+        
+        char full_path[PATH_MAX_SIZE];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, ent.d_name);
+        
+        if (SCE_S_ISDIR(ent.d_stat.st_mode)) {
+            collect_files_recursive(full_path, files, sizes, count, max_files);
+        } else {
+            files[*count] = strdup(full_path);
+            sizes[*count] = ent.d_stat.st_size;
+            (*count)++;
+        }
+    }
+    sceIoDclose(dir);
+    return 0;
+}
+
+int compare_backups(const char *backup_path_a, const char *backup_path_b, BackupComparison *comp) {
+    if (!comp) return -1;
+    
+    memset(comp, 0, sizeof(BackupComparison));
+    
+    char *files_a[1000];
+    char *files_b[1000];
+    SceOff sizes_a[1000];
+    SceOff sizes_b[1000];
+    int count_a = 0, count_b = 0;
+    
+    collect_files_recursive(backup_path_a, files_a, sizes_a, &count_a, 1000);
+    collect_files_recursive(backup_path_b, files_b, sizes_b, &count_b, 1000);
+    
+    comp->total_files_a = count_a;
+    comp->total_files_b = count_b;
+    comp->total_size_a = 0;
+    comp->total_size_b = 0;
+    
+    for (int i = 0; i < count_a; i++) comp->total_size_a += sizes_a[i];
+    for (int i = 0; i < count_b; i++) comp->total_size_b += sizes_b[i];
+    
+    int max_diffs = count_a + count_b;
+    comp->diffs = (FileDiff *)malloc(max_diffs * sizeof(FileDiff));
+    if (!comp->diffs) {
+        for (int i = 0; i < count_a; i++) free(files_a[i]);
+        for (int i = 0; i < count_b; i++) free(files_b[i]);
+        return -1;
+    }
+    
+    comp->diff_count = 0;
+    
+    for (int i = 0; i < count_a; i++) {
+        int found = 0;
+        for (int j = 0; j < count_b; j++) {
+            if (strcmp(files_a[i], files_b[j]) == 0) {
+                found = 1;
+                if (sizes_a[i] != sizes_b[j]) {
+                    FileDiff *diff = &comp->diffs[comp->diff_count++];
+                    strncpy(diff->path, files_a[i], PATH_MAX_SIZE - 1);
+                    diff->path[PATH_MAX_SIZE - 1] = '\0';
+                    diff->only_in_a = 0;
+                    diff->only_in_b = 0;
+                    diff->different_size = 1;
+                    diff->size_a = sizes_a[i];
+                    diff->size_b = sizes_b[j];
+                }
+                break;
+            }
+        }
+        if (!found) {
+            FileDiff *diff = &comp->diffs[comp->diff_count++];
+            strncpy(diff->path, files_a[i], PATH_MAX_SIZE - 1);
+            diff->path[PATH_MAX_SIZE - 1] = '\0';
+            diff->only_in_a = 1;
+            diff->only_in_b = 0;
+            diff->different_size = 0;
+            diff->size_a = sizes_a[i];
+            diff->size_b = 0;
+        }
+    }
+    
+    for (int i = 0; i < count_b; i++) {
+        int found = 0;
+        for (int j = 0; j < count_a; j++) {
+            if (strcmp(files_b[i], files_a[j]) == 0) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            FileDiff *diff = &comp->diffs[comp->diff_count++];
+            strncpy(diff->path, files_b[i], PATH_MAX_SIZE - 1);
+            diff->path[PATH_MAX_SIZE - 1] = '\0';
+            diff->only_in_a = 0;
+            diff->only_in_b = 1;
+            diff->different_size = 0;
+            diff->size_a = 0;
+            diff->size_b = sizes_b[i];
+        }
+    }
+    
+    for (int i = 0; i < count_a; i++) free(files_a[i]);
+    for (int i = 0; i < count_b; i++) free(files_b[i]);
+    
+    return 0;
+}
+
+void free_backup_comparison(BackupComparison *comp) {
+    if (comp) {
+        if (comp->diffs) {
+            free(comp->diffs);
+            comp->diffs = NULL;
+        }
+        comp->diff_count = 0;
+    }
+}
+
+#define STATE_FILE_PATH "ux0:data/VitaVault/backup_state.bin"
+
+int save_backup_state(BackupState *state) {
+    if (!state) return -1;
+    
+    char state_dir[PATH_MAX_SIZE];
+    snprintf(state_dir, sizeof(state_dir), "ux0:data/VitaVault");
+    create_dir(state_dir);
+    
+    SceUID fd = sceIoOpen(STATE_FILE_PATH, SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+    if (fd < 0) return -1;
+    
+    sceIoWrite(fd, state, sizeof(BackupState));
+    sceIoClose(fd);
+    return 0;
+}
+
+int load_backup_state(BackupState *state) {
+    if (!state) return -1;
+    
+    SceUID fd = sceIoOpen(STATE_FILE_PATH, SCE_O_RDONLY, 0);
+    if (fd < 0) return -1;
+    
+    int read = sceIoRead(fd, state, sizeof(BackupState));
+    sceIoClose(fd);
+    
+    if (read != sizeof(BackupState)) return -1;
+    return 0;
+}
+
+int clear_backup_state(void) {
+    sceIoRemove(STATE_FILE_PATH);
+    return 0;
+}
+
+int can_resume_backup(void) {
+    BackupState state;
+    if (load_backup_state(&state) < 0) return 0;
+    return state.is_active;
+}
+
+int resume_backup(char *backup_root, int root_size, BackupLog *log) {
+    BackupState state;
+    if (load_backup_state(&state) < 0) return -1;
+    
+    if (!state.is_active) return -1;
+    
+    strncpy(backup_root, state.backup_path, root_size - 1);
+    backup_root[root_size - 1] = '\0';
+    
+    log_init(log);
+    char resume_msg[256];
+    snprintf(resume_msg, sizeof(resume_msg), "Resuming backup from entry %d/%d\n", 
+             state.current_entry_index, state.total_entries);
+    log_write(log, resume_msg);
+    
+    int active = 0;
+    for (int i = 0; i < ENTRY_COUNT; i++) {
+        if (entries[i].enabled) active++;
+    }
+    
+    CopyContext ctx;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.current_file = state.current_file_index;
+    ctx.total_files = state.total_files;
+    ctx.current_bytes = state.current_bytes;
+    ctx.total_bytes = state.total_bytes;
+    
+    for (int i = state.current_entry_index; i < ENTRY_COUNT; i++) {
+        if (!entries[i].enabled) continue;
+        
+        state.current_entry_index = i;
+        strncpy(state.last_entry_name, entries[i].name, sizeof(state.last_entry_name) - 1);
+        save_backup_state(&state);
+        
+        int eidx = 0;
+        for (int j = 0; j < i; j++) {
+            if (entries[j].enabled) eidx++;
+        }
+        
+        char dst[PATH_MAX_SIZE];
+        snprintf(dst, sizeof(dst), "%s/%s", backup_root, entries[i].name);
+        
+        log_write_entry_header(log, eidx + 1, active, entries[i].name,
+                               entries[i].source, dst, 0, 0);
+        
+        copy_directory(entries[i].source, dst, &ctx, log);
+        
+        state.current_file_index = ctx.current_file;
+        state.current_bytes = ctx.current_bytes;
+        save_backup_state(&state);
+        
+        log_write_entry_result(log, ctx.has_error);
+        
+        if (ctx.cancel) {
+            log_write(log, "Backup cancelled by user. State saved for resume.\n");
+            log_close(log);
+            return -2;
+        }
+    }
+    
+    state.is_active = 0;
+    save_backup_state(&state);
+    clear_backup_state();
+    
+    log_write(log, "Backup resumed and completed successfully.\n");
+    log_close(log);
     return 0;
 }

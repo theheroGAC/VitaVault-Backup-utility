@@ -13,8 +13,45 @@
 #include "ui.h"
 #include <vita2d.h>
 
-GameEntry games[MAX_GAMES];
+GameEntry *games = NULL;
 int GAME_COUNT = 0;
+int GAMES_CAPACITY = 0;
+
+void init_games_array() {
+    GAMES_CAPACITY = 100;
+    games = (GameEntry *)malloc(GAMES_CAPACITY * sizeof(GameEntry));
+    if (games) {
+        GAME_COUNT = 0;
+        memset(games, 0, GAMES_CAPACITY * sizeof(GameEntry));
+    }
+}
+
+void cleanup_games_array() {
+    if (games) {
+        for (int i = 0; i < GAME_COUNT; i++) {
+            if (games[i].icon) {
+                vita2d_free_texture(games[i].icon);
+                games[i].icon = NULL;
+            }
+        }
+        free(games);
+        games = NULL;
+        GAME_COUNT = 0;
+        GAMES_CAPACITY = 0;
+    }
+}
+
+int expand_games_array() {
+    int new_capacity = GAMES_CAPACITY * 2;
+    GameEntry *new_games = (GameEntry *)realloc(games, new_capacity * sizeof(GameEntry));
+    if (new_games) {
+        games = new_games;
+        memset(games + GAMES_CAPACITY, 0, (new_capacity - GAMES_CAPACITY) * sizeof(GameEntry));
+        GAMES_CAPACITY = new_capacity;
+        return 1;
+    }
+    return 0;
+}
 
 typedef struct {
     uint32_t magic;
@@ -80,10 +117,15 @@ static int scan_app_directory() {
     SceUID dir = sceIoDopen(app_path);
     if (dir < 0) return 0;
     SceIoDirent ent;
-    while (sceIoDread(dir, &ent) > 0 && GAME_COUNT < MAX_GAMES) {
+    while (sceIoDread(dir, &ent) > 0) {
         if (strcmp(ent.d_name, ".") == 0 || strcmp(ent.d_name, "..") == 0) continue;
         if (!SCE_S_ISDIR(ent.d_stat.st_mode)) continue;
         if (strlen(ent.d_name) != 9) continue;
+        
+        if (GAME_COUNT >= GAMES_CAPACITY) {
+            if (!expand_games_array()) break;
+        }
+        
         GameEntry *game = &games[GAME_COUNT];
         memset(game, 0, sizeof(GameEntry));
         strncpy(game->title_id, ent.d_name, sizeof(game->title_id) - 1);
@@ -160,8 +202,13 @@ static void scan_game_data() {
 }
 
 int scan_games() {
+    if (!games) {
+        init_games_array();
+    }
+    if (!games) return 0;
+    
     GAME_COUNT = 0;
-    memset(games, 0, sizeof(games));
+    memset(games, 0, GAMES_CAPACITY * sizeof(GameEntry));
     scan_app_directory();
     scan_addcont_directory();
     scan_patch_directory();

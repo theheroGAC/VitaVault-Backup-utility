@@ -1,0 +1,174 @@
+# VitaVault Language File - Deutsch
+
+language_display_name=Deutsch
+
+# Main Menu
+main_title=VitaVault Backup Utility
+sidebar_backup=Backup
+sidebar_restore=Wiederherstellen
+sidebar_games=Spiele
+sidebar_tools=Tools
+sidebar_ftp=FTP
+sidebar_usb=USB
+sidebar_settings=Einstellungen
+
+# Backup Entries
+entry_full_ux0=Vollständiges ux0 Backup
+entry_plugins_tai=Plugins (tai)
+entry_savedata=SaveData
+entry_licenses=Lizenzen
+entry_trophies=Spiel-Trophäen
+entry_livearea_db=LiveArea DB
+entry_adrenaline=Adrenaline
+entry_themes=Themes / Livearea
+entry_screenshots=Screenshots
+entry_music=Musik
+entry_videos=Videos
+entry_downloads=Downloads
+entry_boot_config=Boot Config (ur0)
+entry_tm0_licenses=tm0_licenses
+entry_registry=System-Registry
+entry_app_metadata=App-Metadaten
+entry_patches=Spiel-Patches
+entry_dlc=DLC / Add-ons
+entry_user_data=Benutzerdaten (ux0)
+entry_retroarch=RetroArch Daten
+entry_roms=ROMS
+entry_playlog=System Playlog
+entry_custom=Benutzerdefinierter Ordner
+
+# Settings
+settings_title=Einstellungen
+settings_ftp_enabled=FTP Auto-Upload
+settings_ftp_compression=FTP Komprimierung
+settings_ftp_checksum=FTP Checksumme
+settings_profile=Profil
+settings_ftp_server=FTP Server
+settings_usb_mass=USB Massenspeicher
+settings_usb_pref=USB Gerätepräferenz
+settings_advanced=Erweitert
+
+# Advanced Settings
+adv_title=Erweiterte Einstellungen
+adv_delete_logs=Logs löschen
+adv_reset_config=Config zurücksetzen
+
+# Notifications
+noti_ftp_on=FTP: AN
+noti_ftp_off=FTP: AUS
+noti_usb_on=USB: AN
+noti_usb_off=USB: AUS
+noti_dest_updated=Globales Ziel aktualisiert!
+noti_path_updated=Entry Quellpfad aktualisiert!
+noti_dest_reset=Ziel auf Standard zurückgesetzt!
+noti_usb_pref_set=USB Präferenz: %s
+noti_usb_pref_auto=USB Präferenz: Auto-Auswahl
+noti_usb_stopped=USB Übertragung gestoppt
+noti_usb_error=USB Fehler beim Stoppen!
+noti_stop_usb_first=USB zuerst stoppen
+noti_stop_ftp_first=FTP zuerst stoppen
+noti_modules_missing=USB Module im VPK fehlen
+noti_module_copy=USB Modul Kopierung fehlgeschlagen
+noti_memory_not_found=Speicher nicht gefunden
+noti_no_devices=Keine Speichergeräte gefunden!
+
+# System Info
+sys_info=System Info
+sys_free=Frei:
+sys_dest=Ziel:
+
+# Footer
+footer_backup=O=Backup starten  ▲/▼=Navigieren  □=Ziel  △+□=Quelle  △+○=Reset
+footer_manage=O=Anzeigen  ▲/▼=Navigieren  □=Löschen  △=Zurück
+footer_settings=×=Umschalten  ▲/▼=Navigieren  △=Zurück
+
+# Profiles
+profile_none=KEINES
+profile_minimal=MINIMAL
+profile_normal=NORMAL
+profile_complete=VOLLSTÄNDIG
+
+# Common
+common_on=AN
+common_off=AUS
+common_yes=Ja
+common_no=Nein
+common_back=Zurück
+common_select=Auswählen
+common_cancel=Abbrechen
+common_delete=Löschen
+common_confirm=Bestätigen
+common_empty=(leer)
+
+# Language Names
+lang_english=Englisch
+lang_italian=Italienisch
+lang_japanese=Japanisch
+lang_spanish=Spanisch
+lang_french=Französisch
+lang_german=Deutsch
+
+# USB
+usb_title=USB Massenspeicher
+usb_connected=USB mit PC verbunden
+usb_device=Gerät:
+usb_warning=Kabel während der Übertragung nicht trennen.
+usb_disconnect=Drücke CIRCLE zum Trennen.
+usb_active=USB Massenspeicher aktiv.
+usb_on_pc=Auf PC das Vita Laufwerk öffnen:
+usb_use_script=download_backup.bat Option 5 verwenden,
+usb_copy_manual=oder den Ordner manuell kopieren.
+usb_press_o=Drücke O um USB zu trennen.
+
+# Storage Selection
+storage_title=USB Speichergerät auswählen
+storage_help=Wähle welches Speichergerät via USB gemountet wird:
+storage_navigate=▲/▼ Navigieren  X=Auswählen  O=Abbrechen
+storage_auto=Auto-Auswahl (jedes Mal fragen)
+
+# Device Names
+dev_memory=Memory Card
+dev_sd2vita=SD2VITA
+dev_psvsd=PSVSD
+dev_game=Game Card
+
+# Tools
+tools_change_dest=Backup Ziel ändern
+tools_change_source=Entry Quellpfad ändern
+tools_reset_dest=Backup Ziel zurücksetzen
+tools_current=Aktuell:
+
+# FTP Settings
+ftp_enabled=FTP Aktiviert
+ftp_host=FTP Host
+ftp_port=FTP Port
+ftp_user=FTP Benutzer
+ftp_password=FTP Passwort
+ftp_remote_dir=Remote Verzeichnis
+ftp_start_server=FTP Server starten
+
+# USB Settings
+usb_start_mass=USB Massenspeicher starten
+usb_pref_device=Bevorzugtes USB Gerät
+usb_active=AKTIV
+usb_auto=Auto
+
+# Settings
+setting_compression=Backup Komprimierung (ZIP)
+setting_checksum=Integritätsprüfung (MD5)
+setting_language=Sprache
+setting_profile=Backup Profil
+setting_advanced=Erweitert
+
+# Error and Confirmation Messages
+noti_no_entries_title=Keine Einträge ausgewählt
+noti_no_entries_msg=Keine Backup-Einträge aktiviert.\n\nDrücke QUADRAT um Einträge zu aktivieren,\ndann drücke X um das Backup zu starten.\n\nDrücke eine Taste um fortzufahren.
+conf_backup_title=Backup bestätigen
+conf_backup_msg=Möchtest du das Backup wirklich starten?
+conf_restore_title=Wiederherstellung bestätigen
+conf_restore_msg=Möchtest du dieses Backup wirklich wiederherstellen?\nVorhandene Daten werden überschrieben!
+conf_delete_title=Löschen bestätigen
+conf_delete_msg=Möchtest du dieses Backup wirklich löschen?
+restore_complete_msg=Wiederherstellung abgeschlossen: %d Dateien, %d Fehler
+title_backup_running=Backup läuft...
+title_backup_complete=Backup abgeschlossen!

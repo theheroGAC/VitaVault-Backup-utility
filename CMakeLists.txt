@@ -32,6 +32,7 @@ link_directories(
 add_executable(${PROJECT_NAME}
   main.c
   backup.c
+  backup_logic.c
   ui.c
   ftp.c
   hash.c
@@ -98,6 +99,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk
   FILE lang/jpn.txt lang/jpn.txt
   FILE lang/es.txt lang/es.txt
   FILE lang/fr.txt lang/fr.txt
+  FILE lang/de.txt lang/de.txt
 
   # Pre-compiled USB modules
   FILE module/kernel.skprx module/kernel.skprx
